@@ -23,7 +23,11 @@ Then open it in Studio, look at the preview, slice and print. The skill is teste
 
 ## Main scenarios
 
+Each scenario shows what you type to Claude.
+
 ### 1. Design it and make it print-ready
+
+Describe the part. Claude designs it and makes the print file.
 
 > Design a phone holder for a 20 mm tool rail in OpenSCAD, then make a print-ready project for my P1S in Bambu PETG Basic black.
 
@@ -36,42 +40,57 @@ itself does not design models; it takes the exported file.
 
 ### 2. Make a project from a model you have
 
-> Make a Bambu Studio project for bracket.stl on my P1S, 0.4 nozzle, Bambu PETG Basic black, 4 walls, 20% infill.
+Attach the model file (or tell Claude which folder it is in), then say what you want.
 
-> Put these three STLs on one plate, PLA Basic white, 0.16 mm layers.
+One model:
+
+> Make a print-ready project from bracket.stl for my P1S with a 0.4 nozzle. Use Bambu PETG Basic in black, 4 walls and 20% infill.
+
+Several models on one plate:
+
+> Put these three STL files on one plate for my P1S. Use Bambu PLA Basic in white with 0.16 mm layers.
 
 ### 3. Multi-color
 
-> base.stl in black PLA and text.stl in white, as one object. AMS slots 1 and 2.
+Each color is its own model file. Attach them and say which color goes where.
 
-> I have no AMS. Print sign.stl in one filament and pause at 6 mm so I can change the filament by hand.
+With an AMS:
+
+> base.stl and text.stl are one object. Print base.stl in black PLA from AMS slot 1 and text.stl in white PLA from slot 2.
+
+Without an AMS:
+
+> Print sign.stl in one filament and pause at 6 mm so I can change the filament by hand.
 
 Without an AMS, the color can change only at a layer height. Two colors cannot sit side by side in one layer.
 
 ### 4. Temperature tower
 
-> Make a temperature tower for Bambu PLA Silk+, 235 down to 215 in 5-degree steps.
+> Make a temperature tower for Bambu PLA Silk+, from 235 down to 215 in 5-degree steps.
 
 Claude builds a labeled tower (each band shows its temperature, with an overhang, a bridge and stringing pins) when you have no
 model. With your own tower model it sets one temperature per band height.
 
 ### 5. Change a project you already have
 
-Use this for a file from MakerWorld, a file from a friend, or a project you saved earlier. The result is always a new file. The original file is not changed.
+Attach the 3MF, for example a file from MakerWorld, a file from a friend, or a project you saved earlier. Then say what to change.
+The result is always a new file. The original file is not changed.
 
-> Change this 3MF to my P1S.
+> Change this project to my P1S.
 
 This works only between printers with the same bed and nozzle size (see the table below). Claude tells you when a change is not possible.
 
-> Swap filament 2 to Bambu PETG Basic, white, and set the plate to Textured PEI.
+> Change filament 2 to Bambu PETG Basic in white, and set the plate to Textured PEI.
 
-> Add a pause at layer 40. Set 3 walls on the object called "Lid".
+> Add a pause at layer 40, and set 3 walls on the object called "Lid".
 
-> Add a fourth color in slot 4, red PLA Basic.
+> Add a fourth color: red Bambu PLA Basic in slot 4.
 
-> Remove the local user data before I share this file.
+> Remove my local user data from this file before I share it.
 
 ### 6. Check a file
+
+Attach the 3MF and ask.
 
 > Check this 3MF. Will it open and slice in Studio 2.9.1?
 
