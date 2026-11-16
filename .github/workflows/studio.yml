@@ -20,13 +20,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: System packages (Xvfb and the webkit library Studio links against)
-        run: sudo apt-get update && sudo apt-get install -y xvfb libwebkit2gtk-4.1-0
+      - name: System packages (Xvfb and the system libraries the Studio binary links against)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb xauth libwebkit2gtk-4.1-0 libgtk-3-0t64 libgl1 libegl1 libgbm1 libglu1-mesa \
+            libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libgstreamer-gl1.0-0 libsecret-1-0 libsoup-3.0-0 \
+            libunwind8 libdw1t64 libmanette-0.2-0 libhyphen0 libenchant-2-2 libfontconfig1 libharfbuzz-icu0
       - name: Download Studio ${{ matrix.version }}
         run: |
           mkdir -p studio && cd studio
           curl -sSL -o studio.AppImage "https://github.com/bambulab/BambuStudio/releases/download/${{ matrix.tag }}/${{ matrix.asset }}"
           chmod +x studio.AppImage && ./studio.AppImage --appimage-extract > /dev/null
+      - name: Check that the Studio binary starts (lists any missing system library)
+        run: |
+          ls -la studio/studio.AppImage studio/squashfs-root/bin/bambu-studio
+          LD_LIBRARY_PATH=studio/squashfs-root/bin ldd studio/squashfs-root/bin/bambu-studio | grep "not found" && exit 1 || true
+          LD_LIBRARY_PATH=studio/squashfs-root/bin LC_ALL=C xvfb-run -a studio/squashfs-root/bin/bambu-studio --help > studio-help.txt 2>&1; echo "exit $?"; head -5 studio-help.txt
       - name: Slice every example and grade the G-code (T2-T11, T13, T14; T12, the other-version check, runs locally with --other-studio-dir)
         run: python3 tests/studio_slice.py --studio-dir studio/squashfs-root --version ${{ matrix.version }} --report slice-report.json --work slice-work
       - name: Pictures of what Studio sliced (top and front view per example)

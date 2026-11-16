@@ -2,8 +2,9 @@ name: tests
 on: [push, pull_request]
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04   # the last runner image that still offers Python 3.8
     strategy:
+      fail-fast: false
       matrix:
         python: ["3.8", "3.9", "3.10", "3.11", "3.12"]   # 3.8-3.10 use the vendored tomli
     steps:

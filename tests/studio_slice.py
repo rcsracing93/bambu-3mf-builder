@@ -42,7 +42,14 @@ def run_studio(sdir, args, workdir, timeout=600):
     t0 = time.time()
     p = subprocess.run(cmd, cwd=workdir, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                        timeout=timeout)
-    return p.returncode, p.stdout.decode("utf-8", "replace"), time.time() - t0
+    out = p.stdout.decode("utf-8", "replace")
+    if p.returncode == 127 and not _START_FAIL:                # the program did not start: show why, once
+        _START_FAIL.append(1)
+        print("Studio did not start (exit 127). Its output:\n" + out[-2000:])
+    return p.returncode, out, time.time() - t0
+
+
+_START_FAIL = []
 
 
 def read_result(outdir):
