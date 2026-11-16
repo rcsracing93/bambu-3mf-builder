@@ -10,6 +10,18 @@ taken from the published Bambu Studio source. It works as a Claude skill, and th
 
 Built for Bambu Studio **2.8.2** and **2.9.1**. The builder picks the one installed on your computer, or the newest if none is found. Not made by or affiliated with Bambu Lab.
 
+## Use it in Claude
+
+Install it (below), then ask in plain words. Claude writes the job, builds, checks and hands you the 3MF and a short summary.
+
+- "Design a phone holder for a 20 mm tool rail in OpenSCAD and make it print-ready for my P1S in PETG Basic black."
+- "Make a Bambu Studio project for bracket.stl on my P1S in Bambu PETG Basic black, 4 walls, 20% infill."
+- "Make a temperature tower for Bambu PLA Silk+, 235 down to 215."
+- "Change this 3MF to my P1S and swap filament 2 to white PETG Basic."
+- "Check this 3MF. Is anything personal in it before I share it?"
+
+Scenarios, what to give Claude, and everything you can ask for: [docs/using-in-claude.md](docs/using-in-claude.md).
+
 ## What "tested" means here
 
 Every example in `examples/` is built, then sliced by a real headless Bambu Studio of both versions, and the result is graded
@@ -76,9 +88,6 @@ filament = 1
 
 Every key is in [references/job-format.md](references/job-format.md). Twelve working jobs with a gallery are in
 [docs/examples.md](docs/examples.md). The validator rules are in [references/rules.md](references/rules.md).
-
-With Claude, ask in plain words: "Build a Studio project for this STL on my P1S in PETG, 4 walls, 25% gyroid." Claude asks for
-what is missing, writes the job, builds, validates and tells you what it made.
 
 ## Patch an existing project
 

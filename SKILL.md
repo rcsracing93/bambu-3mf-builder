@@ -1,6 +1,6 @@
 ---
 name: bambu-3mf-builder
-description: Build a Bambu Studio project 3MF from a short job file (printer, process, filaments, meshes, per-object settings, layer pauses, temperature towers) and check any Bambu 3MF against rules taken from the Studio source. Use when someone wants a ready-to-slice Bambu Studio project, a temperature tower, a multi-color project, or a check of a hand-edited 3MF. Not for slicing, G-code, or non-Bambu slicers.
+description: Build a Bambu Studio project 3MF from STL, OBJ or 3MF models (printer, filament presets and colors, settings per project, object or part, several plates, modifier and negative parts, pauses and temperature changes at a layer, temperature towers), change an existing Bambu Studio 3MF (printer, presets, colors, settings, plate type, filament slots, pauses), and check or validate any Bambu 3MF against rules taken from the Studio source. Use when someone wants a ready-to-slice Bambu Studio project (also right after designing a part, for example in OpenSCAD), a temperature tower, a multi-color or AMS project, a pause for a manual filament swap, the exact Bambu preset names for a printer, to change or check a 3MF from MakerWorld or elsewhere, to move a project to another Bambu printer, or to remove personal data from a 3MF before sharing. Not for slicing to G-code, sending to a printer, rotating, scaling or repairing a model, STEP files, general print advice, or Orca, Prusa or Cura projects.
 ---
 
 # Bambu 3MF builder
@@ -16,7 +16,10 @@ on every printer. Say that to the user if they ask whether a print will work.
 - The user wants a Studio project file with chosen printer, process, filaments, colors, walls, infill, speeds or temperatures.
 - The user wants a temperature tower, a pause at a layer, or a multi-color part built from several STL files.
 - The user wants a ready-made calibration temperature tower and has no model: `[temperature_tower] shape = "calibration"` (see `examples/calibration_tower.toml`).
+- Claude just designed a part (OpenSCAD, CadQuery) and the user wants to print it: export STL, one file per color, then build.
 - The user hand-edited a 3MF or got one from someone else and wants it checked.
+- The user has a Studio project (their own or from MakerWorld) and wants a change: printer, presets, colors, settings, plate type, a pause, a filament slot. Use patch mode (below).
+- The user wants to remove personal data from a 3MF before sharing it: `scripts/sanitize_3mf.py`.
 
 Do not use it to slice, to make G-code, to change a mesh inside an existing project, or for Orca Slicer, Prusa or Cura projects. STEP files are not read: export STL first.
 
