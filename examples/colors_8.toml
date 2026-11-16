@@ -1,0 +1,71 @@
+studio  = "2.8.2"
+output  = "colors_8.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#C12E1F"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#0A2989"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#F5C400"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#1E8E3E"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#8A8A8A"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FF7A00"
+
+[[object]]
+name = "Multi"
+[[object.part]]
+name = "Part 1"
+mesh = "data/slab1.stl"
+filament = 1
+[[object.part]]
+name = "Part 2"
+mesh = "data/slab2.stl"
+filament = 2
+[[object.part]]
+name = "Part 3"
+mesh = "data/slab3.stl"
+filament = 3
+[[object.part]]
+name = "Part 4"
+mesh = "data/slab4.stl"
+filament = 4
+[[object.part]]
+name = "Part 5"
+mesh = "data/slab5.stl"
+filament = 5
+[[object.part]]
+name = "Part 6"
+mesh = "data/slab6.stl"
+filament = 6
+[[object.part]]
+name = "Part 7"
+mesh = "data/slab7.stl"
+filament = 7
+[[object.part]]
+name = "Part 8"
+mesh = "data/slab8.stl"
+filament = 8

@@ -1,0 +1,40 @@
+# Changelog
+
+## 1.1.0 (2026-11-16)
+
+First public release. Supports Bambu Studio 2.8.2.61 and 2.9.1.70.
+
+### Build
+- Job file (TOML) to a Bambu Studio project 3MF. Printer, process and filament presets come from Bambu's own profiles for the pinned Studio version; every setting is checked against Studio's option table.
+- Exact preset names; a near miss fails with the closest names. `--list printer|process|filament` shows the selectable names.
+- Friendly setting names (`walls`, `infill`, `nozzle_temp`, `bed_temp`, ...), listed in `references/job-format.md`.
+- Multi-color projects with Studio's automatic purge volumes, several plates, modifier, negative and support parts, per-object and per-part settings.
+- Layer pauses, temperature changes and temperature towers. `shape = "calibration"` makes a labeled calibration tower: one band per temperature, each with an overhang, a bridge and stringing pins.
+- The prime tower footprint is reserved and checked.
+- Your own saved Studio presets can be used as a base. Only the named preset file is read, at run time; the 3MF records its parent preset the way Studio does.
+- Sparse infill defaults to Rectilinear instead of Grid (a job can set any pattern).
+- A summary file `<name>.summary.md` next to every 3MF: presets, colors, temperatures, overrides, layer G-code and warnings. `--no-summary` turns it off.
+- Settings lint (warnings only): temperatures outside the filament's range, chamber temperature on a printer without chamber control, inlays thinner than one layer.
+- `--slice-check` slices the built file in your installed Bambu Studio and reports print time and filament per plate (Linux and macOS).
+
+### Validate
+- 39 format rules and 6 untrusted-input guards, each traced to the Bambu Studio source (`references/rules.md`).
+- Modes: default (errors only for what Studio rejects or misreads), `--strict`, and `--privacy` (personal-data scan, never an error). `--json` output.
+- Reads both forms Studio writes: the normal project file and File > Export > Export Generic 3MF.
+
+### Patch an existing project
+- `patch = "file.3mf"` changes a Studio 2.8.2 or 2.9.1 project and writes a new file: process and filament presets, colors, settings (project, object, part), filament per object or part, plate type, pauses, temperature changes and custom layer G-code.
+- Add a filament slot, or remove the last one when nothing uses it.
+- Change the printer between printers with the same bed: X1 Carbon, X1, X1E, P1S and P1P, and A1 and P2S. Presets follow the same match Studio makes when you pick another printer.
+- The designer's changes on a swapped preset are dropped and listed; `keep_changes = true` keeps them.
+- The designer's credit stays (title, designer, licence, description). Only local data is removed: local user ids, print-host settings and absolute paths.
+- Every entry the job does not touch keeps its exact bytes. The output is read back and checked before it replaces anything.
+
+### Privacy
+- The builder writes no account ids, user names or local paths. `scripts/sanitize_3mf.py` cleans a file before you share it.
+
+### Tests
+- Unit tests, plus real headless Bambu Studio slicing and save round trips for both versions. Sliced and checked by Studio, not print-tested on every printer (`docs/support-matrix.md`).
+
+### Install
+- Claude Code: `/plugin marketplace add rcsracing93/bambu-3mf-builder`, or download the skill or plugin zip from the release.

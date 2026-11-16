@@ -1,0 +1,13 @@
+{
+  "name": "bambu-3mf-builder",
+  "description": "Build and validate Bambu Studio project 3MF files from a short job file.",
+  "owner": { "name": "Rick Shank" },
+  "plugins": [
+    {
+      "name": "bambu-3mf-builder",
+      "source": "./",
+      "description": "Build and validate Bambu Studio project 3MF files from a short job file, using rules taken from the Bambu Studio source.",
+      "skills": ["./"]
+    }
+  ]
+}

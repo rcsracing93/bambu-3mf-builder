@@ -1,0 +1,25 @@
+studio  = "2.8.2"
+output  = "f4out.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.16mm Optimal @BBL X1C"
+
+# Same as the stock Studio save this job is compared with (the builder defaults to rectilinear)
+[settings]
+infill_pattern = "grid"
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+[[filament]]
+preset = "Bambu PLA Matte @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#C12E1F"
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#0A2989"
+[[object]]
+name = "Cube"
+[[object.part]]
+mesh = "../data/cube20.stl"
+filament = 1

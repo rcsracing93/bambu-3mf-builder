@@ -1,0 +1,15 @@
+studio  = "2.8.2"
+output  = "single_a1.3mf"
+printer = "Bambu Lab A1 0.4 nozzle"
+process = "0.20mm Standard @BBL A1"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL A1"
+color = "#C12E1F"
+
+[[object]]
+name = "Cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+

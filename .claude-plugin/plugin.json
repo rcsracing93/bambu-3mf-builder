@@ -1,0 +1,10 @@
+{
+  "name": "bambu-3mf-builder",
+  "version": "1.1.0",
+  "description": "Build and validate Bambu Studio project 3MF files from a short job file, using rules taken from the Bambu Studio source.",
+  "author": { "name": "Rick Shank" },
+  "homepage": "https://github.com/rcsracing93/bambu-3mf-builder",
+  "repository": "https://github.com/rcsracing93/bambu-3mf-builder",
+  "license": "AGPL-3.0-only",
+  "keywords": ["bambu", "bambu-studio", "3mf", "3d-printing"]
+}

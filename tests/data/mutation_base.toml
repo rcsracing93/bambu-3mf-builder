@@ -1,0 +1,28 @@
+# Known-good job the mutation tests start from: two filaments, two parts, two job settings (so the diff lists are not empty).
+studio  = "2.8.2"
+output  = "mutation_base.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[settings]
+sparse_infill_density = "35%"
+wall_loops = 4
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+
+[[object]]
+name = "Pair"
+[[object.part]]
+name = "Lower"
+mesh = "../../examples/data/slab1.stl"
+filament = 1
+[[object.part]]
+name = "Upper"
+mesh = "../../examples/data/slab2.stl"
+filament = 2

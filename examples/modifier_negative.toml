@@ -1,0 +1,26 @@
+studio  = "2.8.2"
+output  = "modifier_negative.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FF8000"
+
+[[object]]
+name = "Body"
+[[object.part]]
+name = "Body"
+mesh = "data/cube20.stl"
+filament = 1
+[[object.part]]
+name = "Mod"
+mesh = "data/lower_half.stl"
+type = "modifier_part"
+units = "mm"
+[object.part.settings]
+sparse_infill_density = "80%"
+[[object.part]]
+name = "Hole"
+mesh = "data/hole8.stl"
+type = "negative_part"

@@ -1,0 +1,17 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]   # 3.8-3.10 use the vendored tomli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: All tests (includes the privacy gate, tests/test_privacy.py)
+        run: python3 tests/run_all.py
+      - name: Privacy gate on its own (fails the build if any fixture or output carries personal data)
+        run: python3 -I tests/test_privacy.py

@@ -1,0 +1,31 @@
+studio  = "2.8.2"
+output  = "two-color.3mf"
+title   = "Two color cube"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+plate_type = "Textured PEI Plate"
+
+[settings]
+wall_loops = 3
+sparse_infill_density = "15%"
+sparse_infill_pattern = "gyroid"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color  = "#000000"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color  = "#c0c0c0"
+[filament.settings]
+nozzle_temperature = 225
+filament_flow_ratio = 0.97
+
+[[object]]
+name = "Cube"
+[object.settings]
+brim_type = "no_brim"
+[[object.part]]
+name = "Body"
+mesh = "../data/cube20.stl"
+filament = 1

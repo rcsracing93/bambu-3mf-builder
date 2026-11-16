@@ -1,0 +1,28 @@
+{
+  "skill": "bambu-3mf-builder",
+  "note": "should_trigger: the skill is the right tool. should_not_trigger: another tool or no tool fits better. Checked by tests/test_skill.py for shape; run against a model by hand when the description changes.",
+  "should_trigger": [
+    "Make me a Bambu Studio project for this STL on my P1S in PETG with 4 walls and 25% gyroid infill.",
+    "Build a 3mf with a temperature tower from 230 down to 205 for PLA on my A1.",
+    "I want a four color 3mf for the X1C, one STL per color, ready to slice in Studio.",
+    "Can you check whether this 3MF is valid before I open it in Bambu Studio? I edited project_settings.config by hand.",
+    "Generate a project file with a pause at 12 mm so I can drop in a magnet.",
+    "Put these two STLs on separate plates in one Bambu Studio project and set different infill per object.",
+    "Studio keeps resetting my settings when I open a 3mf I made with a script. What is wrong with the file?",
+    "Add a modifier region with 80% infill and a negative hole to a Bambu project file.",
+    "What are the exact preset names for PETG on a P1S 0.4 nozzle in Studio 2.9.1?",
+    "Script a bambu studio 3mf so I do not have to click through the GUI for each batch."
+  ],
+  "should_not_trigger": [
+    "Slice this STL and give me the G-code for my Ender 3.",
+    "What temperature should I print PETG at?",
+    "Convert this STEP file to STL.",
+    "Make an Orca Slicer profile for my Voron.",
+    "Design a phone stand in OpenSCAD.",
+    "Why is my first layer not sticking on the P1S?",
+    "Make me a PowerPoint about 3D printing.",
+    "Fix the stringing in my print, here is a photo.",
+    "Write a Python script to rename my STL files.",
+    "Which printer should I buy, P1S or A1?"
+  ]
+}

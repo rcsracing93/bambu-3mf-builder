@@ -1,0 +1,52 @@
+name: real Bambu Studio
+# Builds every example, slices it in a real Bambu Studio (headless AppImage) and checks the G-code,
+# then round-trips files through Studio saves. One job per supported Studio version.
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  studio:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: "2.8.2"
+            tag: v02.08.02.61
+            asset: BambuStudio_ubuntu24.04-v02.08.02.61-20260820225108.AppImage
+          - version: "2.9.1"
+            tag: v02.09.01.70
+            asset: BambuStudio_ubu24-v02.09.01.70-20261103183404.AppImage
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: System packages (Xvfb and the webkit library Studio links against)
+        run: sudo apt-get update && sudo apt-get install -y xvfb libwebkit2gtk-4.1-0
+      - name: Download Studio ${{ matrix.version }}
+        run: |
+          mkdir -p studio && cd studio
+          curl -sSL -o studio.AppImage "https://github.com/bambulab/BambuStudio/releases/download/${{ matrix.tag }}/${{ matrix.asset }}"
+          chmod +x studio.AppImage && ./studio.AppImage --appimage-extract > /dev/null
+      - name: Slice every example and grade the G-code (T2-T11, T13, T14; T12, the other-version check, runs locally with --other-studio-dir)
+        run: python3 tests/studio_slice.py --studio-dir studio/squashfs-root --version ${{ matrix.version }} --report slice-report.json --work slice-work
+      - name: Pictures of what Studio sliced (top and front view per example)
+        run: python3 tests/make_gallery.py slice-work --out gallery
+      - name: Mutation test - the harness must fail on 5 broken files and 3 broken loads of a good example
+        run: python3 tests/studio_mutation.py --studio-dir studio/squashfs-root --version ${{ matrix.version }} --report mutation-report.json
+      - name: --slice-check and --studio-path through this Studio
+        run: python3 tests/studio_cli.py --studio-dir studio/squashfs-root
+      - name: Round trip through three Studio saves (G1-G4)
+        run: python3 tests/studio_roundtrip.py --studio-dir studio/squashfs-root
+      - name: Same examples, files built for 2.9.1 (only meaningful in Studio 2.9.1)
+        if: matrix.version == '2.9.1'
+        run: |
+          python3 tests/studio_slice.py --studio-dir studio/squashfs-root --version 2.9.1 --build-version 2.9.1 --report slice-report-built-291.json
+          python3 tests/studio_roundtrip.py --studio-dir studio/squashfs-root --build-version 2.9.1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-${{ matrix.version }}-report
+          path: |
+            slice-report*.json
+            mutation-report.json
+            gallery/*.svg

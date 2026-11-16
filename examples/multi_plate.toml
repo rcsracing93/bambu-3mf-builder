@@ -1,0 +1,22 @@
+studio  = "2.8.2"
+output  = "multi_plate.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FF8000"
+
+[[object]]
+name = "A"
+plate = 1
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+
+[[object]]
+name = "B"
+plate = 2
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1

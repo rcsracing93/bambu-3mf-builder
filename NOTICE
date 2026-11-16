@@ -1,0 +1,22 @@
+bambu-3mf-builder
+Copyright (C) 2026 Rick Shank (rcsracing93)
+Licensed under the GNU Affero General Public License v3.0 (see LICENSE).
+
+This project builds files for Bambu Studio. It is not made by, endorsed by or affiliated with Bambu Lab.
+"Bambu Lab", "Bambu Studio", "P1S", "X1C", "A1" and "H2D" are names of Bambu Lab products.
+
+Third-party material in this repository
+
+1. Bambu Studio (https://github.com/bambulab/BambuStudio), AGPL-3.0, copyright Bambu Lab and contributors.
+   - studio/<version>/profiles/ and studio/<version>/flush/ hold machine, process and filament profiles and flush data
+     copied unchanged from tags v02.08.02.61 and v02.09.01.70 (see the SOURCE file in each folder).
+   - studio/<version>/options.json is generated from that source by scripts/gen_bambu_options.py.
+   - The file-format rules in the validator were derived by reading the published source (bbs_3mf.cpp, PrintConfig.cpp,
+     Preset.cpp and others) and by testing against real Studio runs.
+2. tomli 2.0.1 (https://github.com/hukkin/tomli), MIT, copyright Taneli Hukkinen.
+   Vendored in scripts/bambu3mf/_vendor/tomli/ with its license, used only on Python 3.8 to 3.10.
+3. Prior art, MIT. Ideas were read and re-implemented from the published source. No code was copied.
+   - alexjfalcao/bambu-3mf-skill (https://github.com/alexjfalcao/bambu-3mf-skill)
+   - m-esm/bambu-3mf-export (https://github.com/m-esm/bambu-3mf-export)
+
+Test fixtures are generated or sanitized so they carry no account IDs, user names or local paths (rule R33, tests/test_privacy.py).
