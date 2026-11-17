@@ -35,6 +35,7 @@ tomllib = jobmod.tomllib
 
 def run_studio(sdir, args, workdir, timeout=600):
     sdir = os.path.abspath(sdir)                                 # Studio runs in workdir, so a relative path would not resolve
+    workdir = os.path.abspath(workdir)
     exe = os.path.join(sdir, "bin", "bambu-studio")
     env = dict(os.environ, LD_LIBRARY_PATH=os.path.join(sdir, "bin"), LC_ALL="C")
     cmd = [exe] + args
@@ -44,9 +45,9 @@ def run_studio(sdir, args, workdir, timeout=600):
     p = subprocess.run(cmd, cwd=workdir, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                        timeout=timeout)
     out = p.stdout.decode("utf-8", "replace")
-    if p.returncode == 127 and not _START_FAIL:                # the program did not start: show why, once
+    if p.returncode != 0 and not _START_FAIL:                  # show the first failure's log once, so CI says why
         _START_FAIL.append(1)
-        print("Studio did not start (exit 127). Its output:\n" + out[-2000:])
+        print("Studio exit %d. The last lines of its output:\n%s" % (p.returncode, out[-2000:]))
     return p.returncode, out, time.time() - t0
 
 
@@ -268,7 +269,7 @@ def main():
     ap.add_argument("--work")
     a = ap.parse_args()
     jobs = a.jobs or sorted(glob.glob(os.path.join(ROOT, "examples", "*.toml")))
-    work = a.work or tempfile.mkdtemp(prefix="studio_slice_")
+    work = os.path.abspath(a.work) if a.work else tempfile.mkdtemp(prefix="studio_slice_")
     os.makedirs(work, exist_ok=True)
     rep = Report()
     other = (a.other_studio_dir, a.other_version) if a.other_studio_dir else None

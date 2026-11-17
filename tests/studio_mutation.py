@@ -38,7 +38,7 @@ def main():
     ap.add_argument("--report")
     ap.add_argument("--work")
     a = ap.parse_args()
-    work = a.work or tempfile.mkdtemp(prefix="studio_mut_")
+    work = os.path.abspath(a.work) if a.work else tempfile.mkdtemp(prefix="studio_mut_")
     table = []
     base = run(a.studio_dir, a.version, os.path.join(work, "base"), None) if os.makedirs(os.path.join(work, "base"), exist_ok=True) is None else None
     bad = [r for r in base if not r["ok"]]

@@ -116,7 +116,7 @@ def main():
     ap.add_argument("--work")
     a = ap.parse_args()
     jobs = a.jobs or [os.path.join(ROOT, "examples", n + ".toml") for n in ("colors_4", "colors_8", "modifier_negative", "per_object_settings", "single_p1s")]
-    work = a.work or tempfile.mkdtemp(prefix="studio_rt_")
+    work = os.path.abspath(a.work) if a.work else tempfile.mkdtemp(prefix="studio_rt_")
     os.makedirs(work, exist_ok=True)
     fails = []
     for j in jobs:
