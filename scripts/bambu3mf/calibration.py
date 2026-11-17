@@ -5,35 +5,37 @@ part per band (the temperature number, cut into the front of the label wall). Ev
 overlap each other on purpose and never share a vertex (build_tower checks that): the slicer unions them per layer, and shells
 that only touched would share edges, which the 3MF reader merges into non-manifold edges.
 
-Coordinates: x runs left to right, y front (-5) to back (+5), z up from the bed. One band is 8 mm high:
+Coordinates: x runs left to right, y front (-7) to back (+7), z up from the bed. One band is 8 mm high; the tower is 14 mm deep.
 
     x -15.4 .. -4.2   label wall (11.2 mm), full height, the number (3 digits, 9.0 mm) is cut 0.6 mm into its front face
-    x  -4.2 ..  5.8   slot, open front and back, 7 mm high; a 1 mm roof slab bridges it (10 mm span)
-    x   5.8 ..  7.4   support wall for the roof
-    x   7.4 .. 11.4   overhang wedge: underside rises at 45 degrees for 2 mm, then at 30 degrees for 2 mm
+    x  -4.2 ..  5.8   slot, open front and back, 6.8 mm high; a 1.2 mm roof slab bridges it (10 mm span)
+    x   5.8 ..  9.8   support wall for the roof (4 mm)
+    x   9.8 .. 13.8   overhang wedge: underside rises at 45 degrees for 2 mm, then at 30 degrees for 2 mm
                       (angles from the horizontal plane; the wedge top is flat at the band top)
-    pins: two 2.4 mm pins in the slot, 6 mm apart in y, standing on the slot floor (the roof slab of the band below), 6 mm
-          tall, so their tops are 1 mm under the roof slab. Moving between them shows stringing.
+    pins: two 3 mm pins in the slot, side by side 6 mm apart in x, so the gap between them faces the front. They stand on the
+          slot floor (the roof slab of the band below) and are 5.6 mm tall, so their tops are 1.2 mm under the roof slab.
 
-Band 1 stands on a 1 mm base plate (32.8 x 16 mm, 3 mm wider than the body on each side). Highest temperature at the bottom.
+Band 1 stands on a 2 mm base plate (35.2 x 20 mm, 3 mm wider than the body on each side). Highest temperature at the bottom.
+v1.1.1: deeper body (10 -> 14 mm), 4 mm support wall, 2 mm base, 1.2 mm roof and 3 mm pins, after a Silk PLA print broke too easily
+when taken off the plate; the pins turned 90 degrees so the stringing shows from the front.
 """
 import math
 
 from .mesh import Mesh
 
 BAND_H = 8.0
-BASE_T = 1.0
-BASE_X = (-18.4, 14.4)
-BASE_Y = (-8.0, 8.0)
-Y0, Y1 = -5.0, 5.0
+BASE_T = 2.0
+BASE_X = (-18.4, 16.8)
+BASE_Y = (-10.0, 10.0)
+Y0, Y1 = -7.0, 7.0
 WALL_X = (-15.4, -4.2)                 # label wall
 SLOT_X = (-4.2, 5.8)
-SUP_X = (5.8, 7.4)                     # support wall under the roof
-WEDGE_X = (7.4, 11.4)
-ROOF_T = 1.0
+SUP_X = (5.8, 9.8)                     # support wall under the roof, 4 mm
+WEDGE_X = (9.8, 13.8)
+ROOF_T = 1.2
 ROOF_OVERLAP = 0.2                     # the roof slab reaches this far into both walls
 SLOT_CENTER = (SLOT_X[0] + SLOT_X[1]) / 2.0
-PIN_R, PIN_SIDES, PIN_Y, PIN_H, PIN_SINK = 1.2, 16, 3.0, 6.0, 0.4
+PIN_R, PIN_SIDES, PIN_DX, PIN_H, PIN_SINK = 1.5, 16, 3.0, 5.6, 0.4
 OVERHANG_DEG = (45.0, 30.0)            # from the horizontal plane, nearest the wall first
 OVERHANG_RUN = 2.0                     # horizontal length of each overhang step
 DIGIT_W, DIGIT_H, STROKE, DIGIT_GAP = 2.4, 3.6, 0.6, 0.9
@@ -229,8 +231,8 @@ def body_mesh(n):
     for k in range(1, n + 1):
         zb = band_bottom(k)
         sh.box(SLOT_X[0] - ROOF_OVERLAP, SLOT_X[1] + ROOF_OVERLAP, Y0, Y1, zb + BAND_H - ROOF_T, zb + BAND_H)
-        for sy in (-PIN_Y, PIN_Y):
-            sh.cylinder(SLOT_CENTER, sy, zb - PIN_SINK, zb + PIN_H, PIN_R, PIN_SIDES)
+        for dx in (-PIN_DX, PIN_DX):                       # side by side, so the gap between them faces the front
+            sh.cylinder(round(SLOT_CENTER + dx, 6), 0.0, zb - PIN_SINK, zb + PIN_H, PIN_R, PIN_SIDES)
     return sh.mesh.finish()
 
 

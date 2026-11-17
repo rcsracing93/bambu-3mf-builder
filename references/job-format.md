@@ -119,12 +119,16 @@ The default range is five bands (preset temperature +10, +5, 0, -5, -10), highes
 first-layer temperature: the builder sets `nozzle_temperature` and `nozzle_temperature_initial_layer` to it (a warning says so if your job set
 other values). Each later band starts with a temperature change on its first layer.
 
-Each band is 8 mm high on a 1 mm base plate under band 1 (about 29 x 16 mm; the body is 23 x 10 mm). A band has:
+Each band is 8 mm high on a 2 mm base plate under band 1 (35.2 x 20 mm; the body is 29.2 x 14 mm). A band has:
 
 - the temperature number, 3.6 mm high, 0.6 mm deep in the front face (7-segment digits, negative parts);
-- an overhang on the right: the underside rises at 45 degrees for 2 mm, then at 30 degrees for 2 mm (angles from the horizontal plane);
-- a slot with a 1 mm roof that bridges 10 mm;
-- two 2.4 mm pins, 6 mm apart, 6 mm tall, in the slot (stringing shows between them). Nothing needs support.
+- an overhang on the right: the underside rises at 45 degrees for 2 mm, then at 30 degrees for 2 mm (angles from the horizontal plane),
+  held by a 4 mm wall;
+- a slot with a 1.2 mm roof that bridges 10 mm;
+- two 3 mm pins, side by side 6 mm apart, 5.6 mm tall, in the slot. Seen from the front, stringing shows in the gap between them.
+  Nothing needs support.
+
+For a tower that survives removal from the plate, use at least 3 walls and 15% infill; silk filaments in particular have weak layer bonds.
 
 The body is one normal part; every number is a negative part. All parts are closed manifold meshes. The tower prints in about 25 minutes at 0.2 mm
 (layer-cooling slowdown is part of that; a temperature test needs it).

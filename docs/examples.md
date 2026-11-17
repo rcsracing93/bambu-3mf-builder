@@ -719,13 +719,13 @@ Filaments
   1  #FF8000  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 230 C  flow 0.98
 
 Plates
-  plate 1: Calibration tower x1, 32.8 x 16 x 41 mm; Tower body (filament 1), Label 230 (filament 1), Label 225 (filament 1), Label 220 (filament 1), Label 215 (filament 1), Label 210 (filament 1)
+  plate 1: Calibration tower x1, 35.2 x 20 x 42 mm; Tower body (filament 1), Label 230 (filament 1), Label 225 (filament 1), Label 220 (filament 1), Label 215 (filament 1), Label 210 (filament 1)
 
 Calibration tower: 5 bands of 8 mm, 230 C at the bottom down to 210 C at the top
 
 Layer G-code (4 steps)
-  plate 1  z 9.2  temperature 225
-  plate 1  z 17.2  temperature 220
-  plate 1  z 25.2  temperature 215
-  plate 1  z 33.2  temperature 210
+  plate 1  z 10.2  temperature 225
+  plate 1  z 18.2  temperature 220
+  plate 1  z 26.2  temperature 215
+  plate 1  z 34.2  temperature 210
 ```

@@ -154,11 +154,11 @@ out = os.path.join(tmp, "cal.3mf")
 j = load_job(job_from('shape = "calibration"\n'))
 s = package.build(j, out)
 ob = s.objects[0]
-check("object height = base plate + 5 bands of 8 mm", abs(ob.h - (1 + 5 * 8)) < 1e-9, ob.h)
+check("object height = base plate + 5 bands of 8 mm", abs(ob.h - (2 + 5 * 8)) < 1e-9, ob.h)
 bed = package.bed_rect(j.profiles.resolve("machine", j.printer)[0])
 x, y = ob.inst[0]
 check("footprint inside the bed", x - ob.w / 2 >= bed[0] and x + ob.w / 2 <= bed[2] and y - ob.d / 2 >= bed[1] and y + ob.d / 2 <= bed[3], (x, y, ob.w, ob.d))
-check("body is the whole footprint, base plate is 1 mm thick and wider than the body", ob.w > 29 and ob.d > 15 and abs(cal.BASE_T - 1.0) < 1e-9)
+check("body is the whole footprint, base plate is 2 mm thick and wider than the body", ob.w > 34 and ob.d > 19 and abs(cal.BASE_T - 2.0) < 1e-9)
 zs = [g["z"] for g in j.layer_gcode]
 check("four temperature changes, one per band boundary", len(zs) == 4 and all(g["kind"] == "temperature" for g in j.layer_gcode))
 for k, g in enumerate(sorted(j.layer_gcode, key=lambda g: g["z"]), 2):
