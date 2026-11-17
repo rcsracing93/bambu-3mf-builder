@@ -34,6 +34,7 @@ tomllib = jobmod.tomllib
 
 
 def run_studio(sdir, args, workdir, timeout=600):
+    sdir = os.path.abspath(sdir)                                 # Studio runs in workdir, so a relative path would not resolve
     exe = os.path.join(sdir, "bin", "bambu-studio")
     env = dict(os.environ, LD_LIBRARY_PATH=os.path.join(sdir, "bin"), LC_ALL="C")
     cmd = [exe] + args

@@ -36,8 +36,9 @@ def read_bytes(rel):
     if len(parts) >= 4 and parts[0] == "studio" and parts[2] == "profiles" and rel.endswith(".json"):
         data = json.loads(raw.decode("utf-8"))
         if len(parts) == 4:                                    # BBL.json
-            data = {"name": data.get("name", "")} | {k: [{"name": i["name"], "sub_path": i["sub_path"]} for i in data.get(k, [])]
-                                                      for k in ("machine_list", "process_list", "filament_list")}
+            lists = {k: [{"name": i["name"], "sub_path": i["sub_path"]} for i in data.get(k, [])]
+                     for k in ("machine_list", "process_list", "filament_list")}
+            data = dict({"name": data.get("name", "")}, **lists)     # no dict | dict: Python 3.8
         else:
             keep = _valid_keys(parts[1]) | KEEP_META
             data = {k: v for k, v in data.items() if k in keep}
