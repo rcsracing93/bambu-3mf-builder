@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 (2026-11-17)
+
+### Calibration tower
+- Stronger tower that does not break off the plate or snap when you take it off: base 2 mm thick and wider, body 14 mm deep (was 10), a 4 mm wall under the overhang, 1.2 mm roof.
+- The two stringing pins are now side by side across the tower, so you can see the strings between them from the front. Pins are 3 mm wide.
+
 ## 1.1.0 (2026-11-16)
 
 First public release. Supports Bambu Studio 2.8.2.61 and 2.9.1.70.
