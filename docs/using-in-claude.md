@@ -56,7 +56,9 @@ Each color is its own model file. Attach them and say which color goes where.
 
 With an AMS:
 
-> base.stl and text.stl are one object. Print base.stl in black PLA from AMS slot 1 and text.stl in white PLA from slot 2.
+> base.stl and text.stl are one object. Print base.stl in black PLA and text.stl in white PLA.
+
+The filament numbers in the project do not have to match your AMS trays. When you print, Studio maps each project filament to a tray (by color and type), and you can change the mapping there.
 
 Without an AMS:
 
