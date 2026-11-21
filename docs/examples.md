@@ -637,7 +637,7 @@ Job (`examples/height_ranges.toml`):
 ```toml
 # Height ranges: fine layers for the bottom and top of a 20 mm cube, normal layers in between,
 # and extra walls in the top band. Studio's "height range modifier" (Objects list > Height range).
-studio  = "2.9.1"
+studio  = "2.8.2"
 output  = "height_ranges.3mf"
 printer = "Bambu Lab P1S 0.4 nozzle"
 process = "0.20mm Standard @BBL X1C"
@@ -668,7 +668,7 @@ walls = 4
 Builder summary:
 
 ```
-  Bambu Studio 2.9.1.70 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Bambu Studio 2.8.2.61 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
   Plate type: Cool Plate
   Walls 2, infill 15% rectilinear, layer 0.2 mm
 

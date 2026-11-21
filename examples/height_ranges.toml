@@ -1,6 +1,6 @@
 # Height ranges: fine layers for the bottom and top of a 20 mm cube, normal layers in between,
 # and extra walls in the top band. Studio's "height range modifier" (Objects list > Height range).
-studio  = "2.9.1"
+studio  = "2.8.2"
 output  = "height_ranges.3mf"
 printer = "Bambu Lab P1S 0.4 nozzle"
 process = "0.20mm Standard @BBL X1C"
