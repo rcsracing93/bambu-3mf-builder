@@ -73,7 +73,19 @@ Without an AMS, the color can change only at a layer height. Two colors cannot s
 Claude builds a labeled tower (each band shows its temperature, with an overhang, a bridge and stringing pins) when you have no
 model. With your own tower model it sets one temperature per band height.
 
-### 5. Change a project you already have
+### 5. Fine layers where they matter (height ranges)
+
+> Print cap.stl at 0.24 mm, but use 0.12 mm layers for the bottom 1.5 mm chamfer and 0.08 mm layers for the logo in the top 3 mm.
+
+> Use 4 walls in the top 10 mm only.
+
+> Print the top 2 mm of the tag in white, the rest in black.
+
+Give the heights in mm from the bottom of the model as it sits on the plate. Claude sets one band for each, and the rest of the model
+keeps the process layer height. Claude tells you when a band cannot work, for example a layer height the nozzle cannot print, or
+two models with different bands on one multi-color plate (put them on separate plates).
+
+### 6. Change a project you already have
 
 Attach the 3MF, for example a file from MakerWorld, a file from a friend, or a project you saved earlier. Then say what to change.
 The result is always a new file. The original file is not changed.
@@ -90,7 +102,7 @@ This works only between printers with the same bed and nozzle size (see the tabl
 
 > Remove my local user data from this file before I share it.
 
-### 6. Check a file
+### 7. Check a file
 
 Attach the 3MF and ask.
 
@@ -100,7 +112,7 @@ Attach the 3MF and ask.
 
 Claude reports each problem in plain words and tells you what Studio would do with the file. The check uses rules taken from the Studio source code. A real test slice needs Claude on the computer that has Bambu Studio.
 
-### 7. Use your own saved Studio preset
+### 8. Use your own saved Studio preset
 
 > Use my "PLA Basic Flow Calibrated" filament preset for slot 1.
 
@@ -116,7 +128,7 @@ computer that has your Bambu Studio presets. The preset must be saved from a Bam
 | Filament | Set the color per slot; set which slot an object or a part uses; add a slot; remove the last slot if nothing uses it; use Studio's automatic purge volumes or one fixed value |
 | Settings | Set any Studio setting for the whole project, one object, or one part (walls, infill, speed, temperature, supports, seam, ironing, ...) |
 | Objects | Put several models on a plate or on several plates; set the position; make copies; use a model made in inches; set a part as modifier, negative part, support blocker or support enforcer |
-| Layers | Pause, change temperature, or add custom G-code at a height or a layer |
+| Layers | Pause, change temperature, or add custom G-code at a height or a layer; set height ranges with their own layer height, walls, infill, speed or color |
 | Temperature tower | Make a labeled tower (1 to 20 temperature steps, one filament), or set the temperature steps on your own tower model |
 | Plate | Set the plate type for the project or per plate |
 | Check | Check any Bambu 3MF; scan it for personal data; clean it before sharing |
@@ -125,7 +137,7 @@ computer that has your Bambu Studio presets. The preset must be saved from a Bam
 ## Words that bring it up
 
 Claude uses this skill when you mention a **Bambu Studio project**, a **3MF**, a **temperature tower**, a **pause** or a
-**filament swap** at a layer, **multi-color** or **AMS**, a file from **MakerWorld**, a part you want to **design** (for example in **OpenSCAD**) and print, or a printer by name (P1S, X1C, A1, P2S)
+**filament swap** at a layer, **variable layer height** or **height range**, **multi-color** or **AMS**, a file from **MakerWorld**, a part you want to **design** (for example in **OpenSCAD**) and print, or a printer by name (P1S, X1C, A1, P2S)
 together with a model you want ready to print. "Use the 3MF builder" always works.
 
 ## What it does not do

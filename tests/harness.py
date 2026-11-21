@@ -414,3 +414,34 @@ def check_export(exp, job, tri_counts):
             if ep["fixed"]:
                 bad.append("%s part %d: Studio repaired the mesh (%s fixes)" % (o["name"], j, ep["fixed"]))
     return not bad, "; ".join(bad[:4]) if bad else "%d objects, parts, slots and settings intact" % len(exp)
+
+
+def check_height_ranges(layers, ranges, base_h, first_h):
+    """Real layer heights against the job's height ranges. layers: the Z_HEIGHT values of one object's plate. ranges: [(min_z, max_z, h)]
+    from the job file. A layer fully inside a range must be that range's height; a layer at least one layer away from every range edge must
+    be the base height. The first layer keeps its own height. Returns (ok, detail)."""
+    zs = sorted(layers)
+    bad, seen = [], {i: 0 for i in range(len(ranges))}
+    plain = 0
+    for a, b in zip([0.0] + zs, zs):
+        h = b - a
+        if a < 1e-6:
+            if abs(h - first_h) > 0.006:
+                bad.append("first layer %.3f, want %.3f" % (h, first_h))
+            continue
+        inside = [i for i, (lo, hi, _h) in enumerate(ranges) if a >= lo - 1e-3 and b <= hi + 1e-3]
+        if inside:
+            want = ranges[inside[0]][2]
+            seen[inside[0]] += 1
+            if abs(h - want) > 0.006:
+                bad.append("layer %.3f-%.3f is %.3f, range wants %.3f" % (a, b, h, want))
+        elif all(b <= lo - base_h - 1e-3 or a >= hi + base_h - 1e-3 for lo, hi, _h in ranges):
+            plain += 1
+            if abs(h - base_h) > 0.006:
+                bad.append("layer %.3f-%.3f is %.3f, base is %.3f" % (a, b, h, base_h))
+    empty = [i + 1 for i, c in seen.items() if c == 0]
+    if empty:
+        bad.append("no layer inside range(s) %s" % empty)
+    if bad:
+        return False, "; ".join(bad[:4])
+    return True, "%s; %d plain layers at %.2f" % (", ".join("range %d: %d layers at %.2f" % (i + 1, seen[i], ranges[i][2]) for i in range(len(ranges))), plain, base_h)

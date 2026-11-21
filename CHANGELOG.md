@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.0 (2026-11-21)
+
+### Height ranges (variable layer height)
+- New `[[object.height_range]]` in a job: a layer height for a band of one object, for example 0.12 mm for a chamfer at the bottom and
+  0.08 mm for a logo at the top, with the process layer height everywhere else. A band can also have its own walls, infill, speeds and
+  other part settings, and its own filament (a color band). This is Studio's "height range modifier".
+- The builder refuses what Studio would drop or not slice: overlapping bands, a layer height outside the nozzle's limits, bands with
+  organic tree supports, and different bands for objects that share a plate with a prime tower.
+- New validator rule R40 checks the height ranges of any 3MF, including files saved by Studio or edited by hand.
+- Patch mode keeps the height ranges of the file it changes.
+- The summary lists each band.
+- New example: `examples/height_ranges.toml`.
+
+### Docs
+- The guide says that filament numbers in a project do not need to match your AMS slots: Studio matches them when you print.
+
 ## 1.1.1 (2026-11-17)
 
 ### Calibration tower

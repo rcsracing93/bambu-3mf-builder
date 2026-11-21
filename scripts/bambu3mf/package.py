@@ -16,6 +16,7 @@ from . import config as cfgmod
 from . import mesh as meshmod
 from . import lint as lintmod
 from . import wipetower
+from . import ranges as rangesmod
 from .job import JobError
 from .serialize import normalize
 
@@ -328,6 +329,30 @@ def model_settings(job, objs, nplates, by, n):
     return "".join(out)
 
 
+def height_ranges_xml(objs, by):
+    """Metadata/layer_config_ranges.xml. The object id there is the object's 1-based place in the model (build order), which is the
+    job order here: the build items are written sorted by object (see build), and Studio makes its model objects in that order."""
+    by_obj = {}
+    for ob in objs:
+        for r in ob.src.get("height_ranges") or []:
+            opts = [("layer_height", rangesmod._g(r["layer_height"])), ("extruder", str(r.get("filament", 0)))]
+            opts += [(k, _value(by, k, r["settings"][k])) for k in sorted(r["settings"])]
+            by_obj.setdefault(ob.index, []).append((r["min_z"], r["max_z"], opts))
+    return rangesmod.to_xml(by_obj)
+
+
+def _check_ranges_output(path):
+    """Runs the validator's height range rule (R40) on the finished file: it needs the object heights, the plates and the prime tower.
+    A file that breaks it is removed and the build fails."""
+    from . import validate as vmod
+    rep = vmod.validate(path, mode="strict")
+    bad = [f for f in rep.findings if f.rule == "R40" and f.level == "error"]
+    if bad:
+        os.remove(path)
+        raise JobError(["height range: %s" % f.msg for f in bad])
+    return ["height range: %s" % f.msg for f in rep.findings if f.rule == "R40" and f.level == "warning"]
+
+
 def _value(by, key, v):
     nv = normalize(by[key], v)
     if isinstance(nv, list):
@@ -481,6 +506,9 @@ def build(job, out_path=None):
         w.text("Metadata/model_settings.config", model_settings(job, objs, nplates, ps.options, n))
         if xml_gc:
             w.text("Metadata/custom_gcode_per_layer.xml", xml_gc)
+        xml_ranges = height_ranges_xml(objs, ps.options)
+        if xml_ranges:
+            w.text(rangesmod.FILE, xml_ranges)
         w.text("Metadata/slice_info.config", '<?xml version="1.0" encoding="UTF-8"?>\n<config>\n  <header>\n    <header_item key="X-BBL-Client-Type" value="slicer"/>\n'
                '    <header_item key="X-BBL-Client-Version" value="%s"/>\n  </header>\n</config>\n' % ps.tag_version)
         seq = ",".join('"plate_%d":{"nozzle_sequence":[],"optimal_assignment":[],"sequence":[]}' % k for k in sorted(range(1, nplates + 1), key=str))
@@ -488,6 +516,8 @@ def build(job, out_path=None):
     finally:
         w.close()
     os.replace(tmp, path)
+    if xml_ranges:
+        warns.extend(_check_ranges_output(path))
 
     class Summary:
         pass

@@ -5,7 +5,9 @@ Reads (never runs) a Bambu Studio checkout:
   src/libslic3r/PrintConfig.cpp   option definitions, variant sets
   src/libslic3r/Preset.cpp        which preset owns each option
   src/libslic3r/PresetBundle.cpp  project options
-  src/libslic3r/PrintConfig.hpp   enum class names (for enum defaults)
+  src/libslic3r/PrintConfig.hpp   enum class names (for enum defaults) and the
+                                  PrintRegionConfig keys (settings a part or a
+                                  height range may carry)
 
 Writes bambu_options_<tag>.json. Every option record:
   key, type (coInt, coFloats, ...), vector (bool), nullable, preset
@@ -417,11 +419,20 @@ def parse(checkout, tag):
             rec["enum_keys"] = sorted(enum_maps.get(r["_enum_map"], {}).keys()) or None
         out.append(rec)
 
+    hpp = strip_comments((root / "PrintConfig.hpp").read_text(encoding="utf-8", errors="replace"))
+    m = re.search(r"PRINT_CONFIG_CLASS_DEFINE\(\s*PrintRegionConfig\s*,", hpp)
+    region = []
+    if m:
+        st = hpp.index("(", m.start())
+        body = hpp[st:balanced(hpp, st)]
+        region = sorted(set(re.findall(r"\(\(\s*ConfigOption\w+\s*,\s*(\w+)\s*\)\)", body)))
+
     return {
         "studio_tag": tag,
         "generated_from": ["src/libslic3r/PrintConfig.cpp", "src/libslic3r/Preset.cpp", "src/libslic3r/PresetBundle.cpp"],
         "license_note": "Derived from Bambu Studio source (AGPL-3.0). Distributed under AGPL-3.0.",
         "project_options": proj_opts,
+        "region_options": region,
         "variant_sets": {k: sorted(v) for k, v in variant_sets.items()},
         "preset_lists": {"print": sorted(print_opts), "filament": sorted(fil_opts), "printer": sorted(prn_opts)},
         "option_count": len(out),

@@ -20,6 +20,8 @@ Checks per job (names follow the design review):
   T13 the real prime tower does not overlap the printed model; T14 it sits inside the box R37 reserves
   Expectations of intent come from the job FILE (raw TOML) and the meshes; T5 and T14 compare the written file with the G-code.
   T5b the settings, colors and presets the job file asks for are in the G-code with the job's value; T10p pauses sit on the layer asked for
+  T15 height ranges: every layer inside a range has the range's height, the layers away from the ranges the base height, and Studio's
+      re-save keeps the ranges
 """
 import argparse, glob, json, os, re, shutil, subprocess, sys, tempfile, time, zipfile
 
@@ -241,6 +243,29 @@ def check_job(jobfile, sdir, version, work, rep, other=None, build_version=None,
             ok = rcs == 0 and ress and ress.get("return_code") == 0
             detail += ", reslice rc=%s" % rcs
     rep.add(name, "T11", ok, detail)
+
+    # T15 height ranges: the G-code layers follow the job's ranges, and Studio's own re-save keeps them
+    hr = [(o, o.get("height_range")) for o in raw.get("object", []) if o.get("height_range")]
+    if hr:
+        from bambu3mf import ranges as rg
+        res = []
+        for o, rs in hr:
+            k = int(o.get("plate", 1))
+            want = [(float(r["min_z"]), float(r["max_z"]), float(r["layer_height"])) for r in rs]
+            res.append(H.check_height_ranges(parsed[k]["layers"], want, float(blk1.get("layer_height", "0.2")),
+                                             float(blk1.get("initial_layer_print_height", "0.2"))))
+        kept = "re-export missing"
+        if os.path.exists(exp3):
+            with zipfile.ZipFile(exp3) as z:
+                txt = z.read(rg.FILE).decode() if rg.FILE in z.namelist() else ""
+            got, _p = rg.parse(txt) if txt else ({}, [])
+            built, _p = rg.parse(zipfile.ZipFile(f3).read(rg.FILE).decode())
+            same = {i: rg.signature(v) for i, v in got.items()} == {i: rg.signature(v) for i, v in built.items()}
+            kept = "re-export keeps the ranges" if same else "re-export ranges differ: %s" % got
+            res.append((same, kept))
+        else:
+            res.append((False, kept))
+        rep.add(name, "T15", all(x for x, _ in res), " | ".join(d for _, d in res))
 
     # T12 other Studio: same checks that need no second run configuration
     if other:

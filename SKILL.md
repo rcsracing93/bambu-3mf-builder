@@ -1,6 +1,6 @@
 ---
 name: bambu-3mf-builder
-description: Build a Bambu Studio project 3MF from STL, OBJ or 3MF models (printer, filament presets and colors, settings per project, object or part, several plates, modifier and negative parts, pauses and temperature changes at a layer, temperature towers), change an existing Bambu Studio 3MF (printer, presets, colors, settings, plate type, filament slots, pauses), and check or validate any Bambu 3MF against rules taken from the Studio source. Use when someone wants a ready-to-slice Bambu Studio project (also right after designing a part, for example in OpenSCAD), a temperature tower, a multi-color or AMS project, a pause for a manual filament swap, the exact Bambu preset names for a printer, to change or check a 3MF from MakerWorld or elsewhere, to move a project to another Bambu printer, or to remove personal data from a 3MF before sharing. Not for slicing to G-code, sending to a printer, rotating, scaling or repairing a model, STEP files, general print advice, or Orca, Prusa or Cura projects.
+description: Build a Bambu Studio project 3MF from STL, OBJ or 3MF models (printer, filament presets and colors, settings per project, object or part, several plates, modifier and negative parts, pauses and temperature changes at a layer, height ranges, temperature towers), change an existing Bambu Studio 3MF (printer, presets, colors, settings, plate type, filament slots, pauses), and check or validate any Bambu 3MF against rules taken from the Studio source. Use when someone wants a ready-to-slice Bambu Studio project (also right after designing a part, for example in OpenSCAD), a temperature tower, a multi-color or AMS project, a pause for a manual filament swap, the exact Bambu preset names for a printer, to change or check a 3MF from MakerWorld or elsewhere, to move a project to another Bambu printer, or to remove personal data from a 3MF before sharing. Not for slicing to G-code, sending to a printer, rotating, scaling or repairing a model, STEP files, general print advice, or Orca, Prusa or Cura projects.
 ---
 
 # Bambu 3MF builder
@@ -15,6 +15,7 @@ on every printer. Say that to the user if they ask whether a print will work.
 
 - The user wants a Studio project file with chosen printer, process, filaments, colors, walls, infill, speeds or temperatures.
 - The user wants a temperature tower, a pause at a layer, or a multi-color part built from several STL files.
+- The user wants a different layer height (or walls, infill, speed, color) in a z band of one object, for example fine layers for a chamfer or a logo: `[[object.height_range]]` (see `examples/height_ranges.toml`). Heights are mm from the object's bottom.
 - The user wants a ready-made calibration temperature tower and has no model: `[temperature_tower] shape = "calibration"` (see `examples/calibration_tower.toml`).
 - Claude just designed a part (OpenSCAD, CadQuery) and the user wants to print it: export STL, one file per color, then build.
 - The user hand-edited a 3MF or got one from someone else and wants it checked.
@@ -53,6 +54,7 @@ Geometry is never changed. A new filament slot can be added (`slot = n + 1`); th
 - Values are checked against the Studio option table: type, range, enum. Per-extruder lists are expanded by the builder.
 - Values Studio computes itself (colors, filament ids, flush volumes, preset ids) are refused in `settings`. The builder writes them.
 - Parts and the prime tower are checked to be inside the printable area and clear of each other (R37).
+- Height ranges are checked against Studio's own limits (R40): layer height inside the nozzle limits, no overlaps, no organic tree supports, and the same ranges for every object on a plate with a prime tower. When objects need different ranges, put them on separate plates.
 - Sparse infill defaults to Rectilinear, not Grid; keep that unless the user asks for a pattern. Friendly names (`walls`, `infill`, `nozzle_temp`, `bed_temp`) are listed in references/job-format.md. With Studio installed, `--slice-check` slices the result and says whether it worked. Every build also writes `<name>.summary.md` next to the 3MF (`--no-summary` skips it); read it to check what was built.
 - A job may name the user's own saved Studio preset (process or filament) by name; it is read from the local Studio data folder at run time (`--user-presets DIR`, `BAMBU_STUDIO_USER_DIR`). The preset must have a parent system preset. Warn the user that on another computer the file opens as a project preset. Never copy a user preset into the repo or an example.
 - No account ids, user names or local paths are written, and the validator fails any file that has them (R33).

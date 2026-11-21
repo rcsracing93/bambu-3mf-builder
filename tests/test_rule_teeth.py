@@ -290,6 +290,16 @@ c_("R37 saved tower 2 mm off the bed", "R37", GOODT, {PS: setk("wipe_tower_x", [
 # R39 bed temperature 0 for the plate type of the file (Cool Plate in GOOD), on a used filament
 c_("R39 bed temperature 0 on the selected plate", "R39", GOOD, {PS: setk("cool_plate_temp", ["0", "0", "0", "0"])})
 
+# R40 height ranges (Metadata/layer_config_ranges.xml)
+_RG = "Metadata/layer_config_ranges.xml"
+def _rg(body):
+    return ('<?xml version="1.0" encoding="utf-8"?>\n<objects>\n <object id="1">\n%s </object>\n</objects>\n' % body).encode()
+c_("R40 range without layer_height", "R40", GOOD, extra=[(_RG, _rg('  <range min_z="0" max_z="2">\n   <option opt_key="extruder">0</option>\n  </range>\n'))])
+c_("R40 layer height above the nozzle limit", "R40", GOOD, extra=[(_RG, _rg('  <range min_z="0" max_z="2">\n   <option opt_key="layer_height">0.5</option>\n  </range>\n'))])
+c_("R40 overlapping ranges", "R40", GOOD, extra=[(_RG, _rg('  <range min_z="0" max_z="3">\n   <option opt_key="layer_height">0.12</option>\n  </range>\n'
+                                                       '  <range min_z="2" max_z="4">\n   <option opt_key="layer_height">0.16</option>\n  </range>\n'))])
+c_("R40 object id past the model", "R40", GOOD, extra=[(_RG, _rg('  <range min_z="0" max_z="2">\n   <option opt_key="layer_height">0.12</option>\n  </range>\n').replace(b'id="1"', b'id="9"'))])
+
 
 for label, rule, level, build in CASES:
     p = build()

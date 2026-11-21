@@ -1,0 +1,28 @@
+# Height ranges: fine layers for the bottom and top of a 20 mm cube, normal layers in between,
+# and extra walls in the top band. Studio's "height range modifier" (Objects list > Height range).
+studio  = "2.9.1"
+output  = "height_ranges.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#2060C0"
+
+[[object]]
+name = "Cube with fine ends"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+
+[[object.height_range]]          # bottom 2 mm at 0.12 mm
+min_z = 0
+max_z = 2
+layer_height = 0.12
+
+[[object.height_range]]          # top 3 mm at 0.08 mm, 4 walls
+min_z = 17
+max_z = 20
+layer_height = 0.08
+[object.height_range.settings]
+walls = 4

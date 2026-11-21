@@ -22,7 +22,8 @@ TOP_KEYS = {"studio", "output", "title", "printer", "process", "plate_type", "se
             "layer_gcode", "temperature_tower", "purge", "allow_large"}
 BAD_NAME_CHARS = '<>:/\\?*"|'          # Studio drops such names (validator rule R31)
 FILAMENT_KEYS = {"preset", "color", "settings"}
-OBJECT_KEYS = {"name", "plate", "position", "settings", "part", "copies"}
+OBJECT_KEYS = {"name", "plate", "position", "settings", "part", "copies", "height_range"}
+RANGE_KEYS = {"min_z", "max_z", "layer_height", "filament", "settings"}
 PART_KEYS = {"name", "mesh", "filament", "type", "settings", "units"}
 PART_TYPES = ("normal_part", "modifier_part", "negative_part", "support_blocker", "support_enforcer")
 LAYER_KEYS = {"plate", "z", "temperature", "pause", "gcode"}
@@ -162,6 +163,53 @@ PATTERN_NAMES = {"rectilinear": "zig-zag", "aligned_rectilinear": "alignedrectil
 # The builder's one default that differs from Bambu's presets: sparse infill is Rectilinear, not Grid. Grid crosses itself on
 # every layer, so the nozzle drags over infill it just printed. A job that sets sparse_infill_pattern (or infill_pattern) keeps its own.
 DEFAULT_SETTINGS = {"sparse_infill_pattern": "zig-zag"}
+
+
+def _height_ranges(raw, by, ver, w, chk, ps, nfil):
+    """[[object.height_range]]: min_z, max_z (mm from the object's bottom), layer_height, and optional [object.height_range.settings]
+    with the settings a part may have (Studio's PrintRegionConfig). See ranges.py for the source."""
+    out = []
+    if raw is None:
+        return out
+    if not isinstance(raw, list):
+        chk.err(w + ".height_range", "use [[object.height_range]] tables")
+        return out
+    region = getattr(ps, "region_options", None) or set()
+    for i, r in enumerate(raw, 1):
+        rw = "%s height_range #%d" % (w, i)
+        if not isinstance(r, dict):
+            chk.err(rw, "must be a table"); continue
+        for k in r:
+            if k not in RANGE_KEYS:
+                chk.err("%s.%s" % (rw, k), "unknown key.%s" % ((" Closest: " + ", ".join(_closest(k, RANGE_KEYS))) if _closest(k, RANGE_KEYS) else ""))
+        miss = [k for k in ("min_z", "max_z", "layer_height") if k not in r]
+        if miss:
+            chk.err(rw, "needs %s" % ", ".join(miss)); continue
+        try:
+            lo, hi, lh = float(r["min_z"]), float(r["max_z"]), float(r["layer_height"])
+        except (TypeError, ValueError):
+            chk.err(rw, "min_z, max_z and layer_height must be numbers (mm)"); continue
+        st = _settings_table(r.get("settings", {}), ("print",), by, ver, rw + ".settings", chk, "[object.height_range.settings] (process settings only)")
+        if "layer_height" in st:
+            chk.err(rw + ".settings.layer_height", "set layer_height on the range itself, not in its settings")
+            st.pop("layer_height")
+        bad = sorted(k for k in st if region and k not in region)
+        if bad:
+            chk.err(rw + ".settings", "%s cannot be set in a height range. A range takes layer_height and the settings a part can have "
+                    "(walls, infill, speeds, ...); set the others on the object" % ", ".join(bad))
+            for k in bad:
+                st.pop(k)
+        fil = 0
+        if "filament" in r:
+            try:
+                fil = int(r["filament"])
+            except (TypeError, ValueError):
+                fil = -1
+            if not (1 <= fil <= max(nfil, 1)):
+                chk.err(rw + ".filament", "slot %s does not exist; the job defines %d filament slot(s)" % (r["filament"], nfil))
+                fil = 0
+        out.append({"min_z": lo, "max_z": hi, "layer_height": lh, "filament": fil, "settings": st})
+    return out
 
 
 def _settings_table(tbl, owners, by, ver, where, chk, label, plate_type=None):
@@ -522,6 +570,7 @@ def load_job(path, root=None, user_presets=None):
                 chk.err(w + ".position", "must be [x, y] in mm")
         ent["settings"] = _settings_table(o.get("settings", {}), ("print",), by, ver, w + ".settings", chk,
                                           "[object.settings] (process settings only)")
+        ent["height_ranges"] = _height_ranges(o.get("height_range"), by, ver, w, chk, ps, nfil)
         parts = o.get("part")
         if not parts or not isinstance(parts, list):
             chk.err(w, "needs at least one [[object.part]]")

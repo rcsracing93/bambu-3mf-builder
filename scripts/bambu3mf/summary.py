@@ -1,5 +1,6 @@
 """Build summary (3f): what was built, in plain text, with the purge table in grams."""
 import os
+from . import ranges as rangesmod
 
 
 def _f(x):
@@ -39,6 +40,10 @@ def format_summary(job, s):
                 size = "%s x %s x %s mm" % (_f(round(ob.w, 2)), _f(round(ob.d, 2)), _f(round(ob.h, 2)))
                 parts = ", ".join("%s (filament %d)" % (p.name, p.filament) for p in ob.parts)
                 L.append("  plate %d: %s x%d, %s; %s" % (k, ob.name, len(ob.inst), size, parts))
+                for r in ob.src.get("height_ranges") or []:
+                    L.append("    height %s-%s mm: layer %s mm%s%s" % (_f(r["min_z"]), _f(r["max_z"]), rangesmod._g(r["layer_height"]),
+                             (", filament %d" % r["filament"]) if r.get("filament") else "",
+                             "".join(", %s %s" % (k, _val(v)) for k, v in sorted(r["settings"].items()))))
     if getattr(job, "calibration", None):
         t = job.calibration["temps"]
         L.append("")
@@ -115,6 +120,11 @@ def format_summary_md(job, s, slice_info=None):
                  _f(round(ob.w, 2)), _f(round(ob.d, 2)), _f(round(ob.h, 2))))
         for k in sorted(src["settings"]):
             L.append("    - object override `%s` = `%s`" % (k, _val(src["settings"][k])))
+        for r in src.get("height_ranges") or []:
+            L.append("    - height range %s-%s mm: layer height `%s`%s" % (_f(r["min_z"]), _f(r["max_z"]), rangesmod._g(r["layer_height"]),
+                     (", filament %d" % r["filament"]) if r.get("filament") else ""))
+            for k in sorted(r["settings"]):
+                L.append("        - override `%s` = `%s`" % (k, _val(r["settings"][k])))
         for p in ob.parts:
             L.append("    - part %s: filament %d, type %s" % (p.name, p.filament, p.src["type"]))
             for k in sorted(p.src["settings"]):

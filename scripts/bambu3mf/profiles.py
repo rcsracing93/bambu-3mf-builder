@@ -40,6 +40,7 @@ class ProfileSet:
             opts = json.load(f)
         self.options = {o["key"]: o for o in opts["options"]}
         self.project_options = set(opts["project_options"])
+        self.region_options = set(opts.get("region_options") or [])   # PrintRegionConfig: what a part or a height range may set
         self.tag_version = opts["studio_tag"].lstrip("v")
         self.defaults = {o["key"]: o["default"] for o in opts["options"]}
         self.valid_keys = set(self.defaults)

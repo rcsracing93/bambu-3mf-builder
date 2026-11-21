@@ -4,6 +4,7 @@ Build a ready-to-slice **Bambu Studio project file (.3mf)** from a short job fil
 taken from the published Bambu Studio source. It works as a Claude skill, and the scripts also run on their own.
 
 - Printer, process, filament presets and colors, per-object and per-part settings, modifiers and negative parts.
+- Height ranges (variable layer height): fine layers for a chamfer or a logo band, normal layers elsewhere, and other settings or a color per band.
 - Multi-color projects with Studio's purge volumes, several plates, pauses and temperature changes at a layer, temperature towers.
 - Every setting is checked against the Studio option table (name, type, range, allowed values) before anything is written.
 - Python 3.8 or newer, standard library only. No network calls.
@@ -17,6 +18,7 @@ Install it (below), then ask in plain words. Claude writes the job, builds, chec
 - "Design a phone holder for a 20 mm tool rail in OpenSCAD and make it print-ready for my P1S in PETG Basic black."
 - "Make a Bambu Studio project for bracket.stl on my P1S in Bambu PETG Basic black, 4 walls, 20% infill."
 - "Make a temperature tower for Bambu PLA Silk+, 235 down to 215."
+- "Print cap.stl at 0.24 mm, but use 0.12 mm layers for the bottom 1.5 mm chamfer and 0.08 mm for the logo in the top 3 mm."
 - "Change this 3MF to my P1S and swap filament 2 to white PETG Basic."
 - "Check this 3MF. Is anything personal in it before I share it?"
 
@@ -25,7 +27,7 @@ Scenarios, what to give Claude, and everything you can ask for: [docs/using-in-c
 ## What "tested" means here
 
 Every example in `examples/` is built, then sliced by a real headless Bambu Studio of both versions, and the result is graded
-(settings reach the G-code, tool changes and prime tower are right, pauses and temperatures sit on the requested layers, a Studio
+(settings reach the G-code, tool changes and prime tower are right, pauses and temperatures sit on the requested layers, height ranges give the requested layer heights, a Studio
 re-save still slices). See [docs/support-matrix.md](docs/support-matrix.md).
 
 With Bambu Studio installed, `--slice-check` slices the file you just built and tells you whether Studio accepted it: `python3 scripts/build_bambu_3mf.py job.toml --slice-check`. The program is found in the usual install places; `--studio-path PATH` (the program, the app or the install folder) or the `BAMBU_STUDIO_PATH` variable overrides that. Tested with Studio 2.8.2 and 2.9.1 on Linux and Studio 2.9.1 on macOS (Apple silicon); not yet run on a Windows install.

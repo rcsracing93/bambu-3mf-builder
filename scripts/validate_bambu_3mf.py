@@ -6,7 +6,7 @@ Usage: validate_bambu_3mf.py FILE.3mf [--json] [--strict] [--privacy]      (flag
   --strict  every class except PRIVACY and TOOL is an error (the v1.0 behaviour)
   --privacy also scan for personal data (reported as warnings; never changes the exit code)
   --json    print one JSON object: {"mode", "studio_version", "tables_applied", "findings": [...]}
-Exit 0 = no errors, 1 = errors found, 2 = usage. Every finding names its rule (R1-R39) or guard (G1-G6)."""
+Exit 0 = no errors, 1 = errors found, 2 = usage. Every finding names its rule (R1-R40) or guard (G1-G6)."""
 import json
 import os
 import sys

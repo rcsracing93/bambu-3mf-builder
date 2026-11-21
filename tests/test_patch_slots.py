@@ -256,7 +256,7 @@ def paint_edit(n, d):
 
 
 GCODE_TOOL = b'<?xml version="1.0" encoding="utf-8"?>\n<custom_gcodes_per_layer>\n<plate>\n<plate_info id="1"/>\n<layer top_z="2.12" type="2" extruder="4" color="#0A2989" extra="" gcode="T3"/>\n<mode value="MultiAsSingle"/>\n</plate>\n</custom_gcodes_per_layer>\n'
-RANGES = b'<?xml version="1.0" encoding="utf-8"?>\n<objects_layer_config_ranges>\n<object id="1">\n<range min_z="0" max_z="1">\n<option opt_key="extruder">4</option>\n</range>\n</object>\n</objects_layer_config_ranges>\n'
+RANGES = b'<?xml version="1.0" encoding="utf-8"?>\n<objects>\n<object id="1">\n<range min_z="0" max_z="1">\n<option opt_key="extruder">4</option>\n<option opt_key="layer_height">0.2</option>\n</range>\n</object>\n</objects>\n'
 cases = [
     ("a part on it", rewrite(BASE, os.path.join(tmp, "u_part.3mf"), ms_edit(b'<metadata key="name" value="Body"/>', b'<metadata key="name" value="Body"/>\n    <metadata key="extruder" value="4"/>\n    <metadata key="x" value="1"/>') if False else
                               (lambda n, d: d.replace(b'key="extruder" value="3"', b'key="extruder" value="4"') if n == MS else d)), "has this filament"),

@@ -1,6 +1,6 @@
 """Static validator for Bambu Studio project 3MF files. Works on any 3MF, ours or Studio's.
 
-Every finding carries a rule id from references/rules.md (R1-R39) or a guard id (G1-G6, untrusted-input limits).
+Every finding carries a rule id from references/rules.md (R1-R40) or a guard id (G1-G6, untrusted-input limits).
 Stdlib only. The file is treated as untrusted: size, entry-count and ratio limits, no DOCTYPE/ENTITY in any XML,
 no path tricks, streaming mesh parse with a vertex cap. Nothing in the file is ever executed or opened by path.
 """
@@ -553,6 +553,7 @@ def check_wipe_tower(pkg, rep, cfg):
         rep.err("R17", "Metadata/project_settings.config", "printable_area is missing or not a list of x,y points")
         return
     insts, rm = instances(pkg, rep)
+    pkg._tower_plates = set()
     plate_map, nplates = plate_of_instances(pkg)
     nplates = max(nplates, 1)
     ms = rp.parse_model_settings(pkg, rep) if pkg.has("Metadata/model_settings.config") else None
@@ -579,16 +580,18 @@ def check_wipe_tower(pkg, rep, cfg):
             comp = next((c for c in (w["comps"] if w else []) if c["oid"] == p["id"]), None)
             parts.append({"subtype": p["subtype"], "meta": p["meta"], "paint": getattr(pkg, "_paint", {}).get((comp["path"], comp["oid"])) if comp else None})
         objs_on.setdefault(k, []).append({"meta": o["meta"], "parts": parts})
+    range_fil = _range_filaments(pkg, rm, plate_map, n)    # a height range with its own filament prints with it on that plate
     for k in range(1, nplates + 1):
         items = by_plate.get(k, [])
         if not items:
             continue                                         # nothing is printed on this plate
-        used = wipetower.plate_filaments(cfg, objs_on.get(k, []), changes.get(k, ()))
+        used = wipetower.plate_filaments(cfg, objs_on.get(k, []), changes.get(k, ())) | range_fil.get(k, set())
         _check_bed_temp(cfg, rep, k, used)
         if not wipetower.has_wipe_tower(cfg, used):
             continue
         if plate_seq.get(k, str(cfg.get("print_sequence", "by layer"))) == "by object" and n_print.get(k, 0) != 1:
             continue                                         # GLCanvas3D.cpp (2.8.2 :3887, 2.9.1 :4130): no tower on a by-object plate with other than one printable instance
+        pkg._tower_plates.add(k)
         max_h = max([z1 for _b, z1 in items], default=0.0)
         try:
             src, raw, box = wipetower.tower_at(cfg, max(len(used), 1), max(max_h, 1.0), bed, k)
@@ -612,6 +615,107 @@ def check_wipe_tower(pkg, rep, cfg):
                 rep.err("R37", "plate %d" % k, "a part (x %.0f..%.0f, y %.0f..%.0f) overlaps the prime tower (%s position x %.0f..%.0f, y %.0f..%.0f); the plate prints with %d filament(s) and has a tower" % (
                     b[0], b[2], b[1], b[3], "saved, after Studio moves it inside the plate" if src == "file" else "Studio default", bx0, bx1, by0, by1, len(used)))
                 break
+
+
+def _range_filaments(pkg, rm, plate_map, n):
+    """{plate: filaments the height ranges of its objects print with}. Bad files give nothing here; R40 reports them."""
+    from . import ranges as rg
+    if rm is None or not pkg.has(rg.FILE):
+        return {}
+    try:
+        by_obj, _p = rg.parse(pkg.text(rg.FILE))
+    except Exception:                                        # noqa: BLE001 - untrusted input, R40 reports it
+        return {}
+    order = []
+    for it in rm["items"]:
+        if it.get("objectid") not in order:
+            order.append(it.get("objectid"))
+    out = {}
+    for idx, rs in by_obj.items():
+        if 1 <= idx <= len(order):
+            wid = order[idx - 1]
+            fil = {e for e in rg.extruders(rs) if e <= n}
+            for (w, _i), k in plate_map.items():
+                if w == wid and fil:
+                    out.setdefault(k, set()).update(fil)
+    return out
+
+
+def check_height_ranges(pkg, rep, cfg, ps):
+    """R40, Metadata/layer_config_ranges.xml (height ranges). See ranges.py for the Studio source behind each check."""
+    from . import ranges as rg
+    from . import rules_package as rp
+    W = rg.FILE
+    if not pkg.has(W):
+        return
+    by_obj, probs = rg.parse(pkg.text(W))
+    for pr in probs:
+        rep.err("R40", W, pr)
+    if not by_obj:
+        return
+    insts, rm = instances(pkg, rep)
+    order = []                                               # model object order = first build item of each object (bbs_3mf.cpp)
+    for it in (rm["items"] if rm else []):
+        if it.get("objectid") not in order:
+            order.append(it.get("objectid"))
+    height = {}
+    for it in insts:
+        if it["idx"] == 0:
+            height[it["wid"]] = it["bbox"][1][2] - it["bbox"][0][2]
+    ms = rp.parse_model_settings(pkg, rep) if pkg.has("Metadata/model_settings.config") else None
+    msobj = {o["id"]: o for o in ms["objects"]} if ms else {}
+    names = {wid: (msobj.get(wid, {}).get("meta") or {}).get("name") or ("object %s" % wid) for wid in order}
+    limits = rg.layer_limits(cfg)
+    region = ps.region_options if ps is not None and getattr(ps, "region_options", None) else None
+    sig = {}
+    for idx, rs in sorted(by_obj.items()):
+        if idx > len(order):
+            rep.err("R40", W, "object id %d: the model has %d object(s); Studio drops these ranges" % (idx, len(order)))
+            continue
+        wid = order[idx - 1]
+        where = "object %d (%s)" % (idx, names.get(wid))
+        errs, warns = rg.check(rs, where, limits, None, height.get(wid))
+        for e in errs:
+            cls = modes.CHANGE if ("overlaps" in e or "outside the nozzle" in e) else None
+            rep.err("R40", W, e, cls=cls)
+        for w_ in warns:
+            rep.warn("R40", W, w_, cls=modes.KEEP)
+        if region is not None:
+            for lo, hi, opts in rs:
+                bad = sorted(k for k in opts if k not in ("layer_height", "extruder") and k not in region)
+                if bad:
+                    rep.err("R40", W, "%s range %s-%s mm: %s cannot be set in a height range (Studio uses only layer_height and the settings a part can have)" % (
+                        where, rg._g(lo), rg._g(hi), ", ".join(bad)), cls=modes.KEEP)
+                for k, v in opts.items():
+                    if k in region:
+                        rp._override(k, v, ps, "%s range %s-%s mm" % (where, rg._g(lo), rg._g(hi)), rep, "R40")
+        nf = len(cfg.get("filament_colour") or []) or 1
+        for lo, hi, opts in rs:
+            if "extruder" in opts:
+                try:
+                    e = int(opts["extruder"])
+                except ValueError:
+                    e = -1
+                if not (0 <= e <= nf):
+                    rep.err("R40", W, "%s range %s-%s mm: extruder %r is not 0 (the object's filament) or a filament slot 1..%d" % (
+                        where, rg._g(lo), rg._g(hi), opts["extruder"], nf))
+        om = (msobj.get(wid) or {}).get("meta") or {}
+        def eff(key, default):
+            return str(om.get(key, cfg.get(key, default)))
+        if eff("enable_support", "0") in ("1", "true") and eff("support_type", "").startswith("tree") and eff("support_style", "default") == "tree_organic":
+            rep.err("R40", W, "%s has height ranges and organic tree supports; Studio does not slice that (Print.cpp: \"Variable layer height is not supported with Organic supports\")" % where)
+        sig[wid] = rg.signature(rs)
+    # a plate with a prime tower needs one layer z series for all its objects (Print.cpp, "The prime tower requires that all objects are sliced with the same layer heights")
+    plate_map, _n = plate_of_instances(pkg)
+    on_plate = {}
+    for (wid, _i), k in plate_map.items():
+        on_plate.setdefault(k, set()).add(wid)
+    for k in sorted(getattr(pkg, "_tower_plates", set())):
+        wids = sorted(on_plate.get(k, ()))
+        if len(wids) > 1 and any(w in sig for w in wids) and len({sig.get(w, ()) for w in wids}) > 1:
+            rep.err("R40", "plate %d" % k, "the plate has a prime tower and objects with different height ranges (%s). Studio needs one layer height "
+                    "series for every object on a plate with a prime tower: give them the same ranges, or put them on separate plates" % ", ".join(
+                        names.get(w, w) for w in wids))
 
 
 def _guarded(rep, rule, fn, *a):
@@ -699,6 +803,7 @@ def _validate_rest(pkg, rep, check_root_model_app, privacy_scan=False):
     _guarded(rep, "R33", check_privacy, pkg, rep, privacy_scan)
     if cfg is not None and table_ok:
         _guarded(rep, "R37", check_wipe_tower, pkg, rep, cfg)
+        _guarded(rep, "R40", check_height_ranges, pkg, rep, cfg, ps)
 
 
 def simulate_load(cfg, app, ps, nplates):

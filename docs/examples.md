@@ -628,6 +628,59 @@ Plates
   plate 1: Light x1, 20 x 20 x 20 mm; Part 1 (filament 1)
 ```
 
+## height_ranges
+
+Height ranges: 0.12 mm layers for the bottom 2 mm, 0.08 mm layers and 4 walls for the top 3 mm, 0.2 mm in between.
+
+Job (`examples/height_ranges.toml`):
+
+```toml
+# Height ranges: fine layers for the bottom and top of a 20 mm cube, normal layers in between,
+# and extra walls in the top band. Studio's "height range modifier" (Objects list > Height range).
+studio  = "2.9.1"
+output  = "height_ranges.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#2060C0"
+
+[[object]]
+name = "Cube with fine ends"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+
+[[object.height_range]]          # bottom 2 mm at 0.12 mm
+min_z = 0
+max_z = 2
+layer_height = 0.12
+
+[[object.height_range]]          # top 3 mm at 0.08 mm, 4 walls
+min_z = 17
+max_z = 20
+layer_height = 0.08
+[object.height_range.settings]
+walls = 4
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.1.70 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #2060C0  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Cube with fine ends x1, 20 x 20 x 20 mm; Part 1 (filament 1)
+    height 0-2 mm: layer 0.12 mm
+    height 17-20 mm: layer 0.08 mm, wall_loops 4
+```
+
 ## temperature_tower
 
 Temperature changes every 4 mm, 230 C down to 215 C.

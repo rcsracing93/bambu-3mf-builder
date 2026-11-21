@@ -49,6 +49,7 @@ Slots are numbered 1, 2, 3 in file order. A slot no part uses stays in the proje
 | `position` | `[x, y]` in mm on the plate. Default: the builder places objects in a grid. R37 checks the result. |
 | `copies` | Number of identical instances. Default 1. |
 | `settings` | Per-object process settings (same names and checks as top-level `settings`). |
+| `height_range` | Height ranges, see `[[object.height_range]]` below. |
 
 Each object needs at least one `[[object.part]]`.
 
@@ -67,6 +68,42 @@ Mesh limits, counted over all parts together and per part: warning above 2 milli
 above 10 million unless the job sets `allow_large = true` (decimate in the CAD tool first). Parts must be closed, correctly oriented surfaces (R24); an inside-out mesh is an error because
 Measured on a Mac (Apple silicon, 32 GB, `tests/machine_check.py`): 10 million triangles build in 26 s and validate in 54 s with 4 GB peak memory; 2 million take 5 s and 10 s.
 Studio would flip it silently and hide the mistake.
+
+## `[[object.height_range]]` (height ranges: a layer height, and other settings, for a band of one object)
+
+Studio's "height range modifier" (Objects list > right click > Height range Modifier). Stored in `Metadata/layer_config_ranges.xml`.
+
+| Key | Meaning |
+|---|---|
+| `min_z`, `max_z` | The band, in mm from the bottom of the object. `0 <= min_z < max_z`. |
+| `layer_height` | Layer height in the band, in mm. Required. Must be inside the nozzle's limits (`min_layer_height` / `max_layer_height` of the printer; 0.08-0.28 mm for a P1S 0.4 nozzle), or Studio drops every range of the object. |
+| `filament` | Optional filament slot for the band (a color band). Default: the object's own filament. |
+| `settings` | Optional `[object.height_range.settings]`: the settings a part can have (walls, infill, speeds, ...). Settings that only an object can have (supports, seam, brim, ...) are refused. |
+
+```toml
+[[object.height_range]]          # fine layers for a chamfer at the bottom
+min_z = 0
+max_z = 1.5
+layer_height = 0.12
+
+[[object.height_range]]          # fine layers and 4 walls for a logo at the top
+min_z = 22
+max_z = 25.4
+layer_height = 0.08
+[object.height_range.settings]
+walls = 4
+```
+
+Outside the ranges the object uses the process layer height. The first layer keeps `initial_layer_print_height`.
+
+The builder refuses:
+- ranges that overlap (Studio would trim them), or a range that starts above the object;
+- a layer height outside the nozzle's limits;
+- height ranges together with organic tree supports (`support_style = "tree_organic"`; Studio does not slice that);
+- on a plate with a prime tower (more than one filament, including a range `filament`): objects with different ranges. Studio needs one
+  layer height series for every object on such a plate. Give them the same ranges, or put them on separate plates.
+
+A range that ends above the top of the object is a warning (Studio stops it at the top). Rule R40 checks all of this in any 3MF.
 
 ## `[[layer_gcode]]` (pause, temperature change, custom G-code at a height)
 
