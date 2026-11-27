@@ -9,7 +9,7 @@ taken from the published Bambu Studio source. It works as a Claude skill, and th
 - Every setting is checked against the Studio option table (name, type, range, allowed values) before anything is written.
 - Python 3.8 or newer, standard library only. No network calls.
 
-Built for Bambu Studio **2.8.2** and **2.9.1**. The builder picks the one installed on your computer, or the newest if none is found. A newer Studio release does not stop it: the file is built for the newest supported version with a warning, and Studio opens it with all settings. Not made by or affiliated with Bambu Lab.
+Built for Bambu Studio **2.8.2**, **2.9.1** and **2.9.2**. The builder picks the one installed on your computer, or the newest if none is found. A newer Studio release does not stop it: the file is built for the newest supported version with a warning, and Studio opens it with all settings. Not made by or affiliated with Bambu Lab.
 
 ## Use it in Claude
 
@@ -30,7 +30,7 @@ Every example in `examples/` is built, then sliced by a real headless Bambu Stud
 (settings reach the G-code, tool changes and prime tower are right, pauses and temperatures sit on the requested layers, height ranges give the requested layer heights, a Studio
 re-save still slices). See [docs/support-matrix.md](docs/support-matrix.md).
 
-With Bambu Studio installed, `--slice-check` slices the file you just built and tells you whether Studio accepted it: `python3 scripts/build_bambu_3mf.py job.toml --slice-check`. The program is found in the usual install places; `--studio-path PATH` (the program, the app or the install folder) or the `BAMBU_STUDIO_PATH` variable overrides that. Tested with Studio 2.8.2 and 2.9.1 on Linux and Studio 2.9.1 on macOS (Apple silicon); not yet run on a Windows install.
+With Bambu Studio installed, `--slice-check` slices the file you just built and tells you whether Studio accepted it: `python3 scripts/build_bambu_3mf.py job.toml --slice-check`. The program is found in the usual install places; `--studio-path PATH` (the program, the app or the install folder) or the `BAMBU_STUDIO_PATH` variable overrides that. Tested with Studio 2.8.2 and 2.9.1 on Linux and Studio 2.9.1 and 2.9.2 on macOS (Apple silicon); the Linux CI also runs Studio 2.9.2. Not yet run on a Windows install.
 
 A job may name one of your own saved Studio presets (process or filament) instead of a system preset. The builder reads that one file from your Studio data folder at run time (`--user-presets DIR` or `BAMBU_STUDIO_USER_DIR` to point elsewhere). The preset needs a parent system preset. The 3MF carries the parent and the changed values and the build warns that on a computer without your preset the file opens as a project preset. Details in [references/job-format.md](references/job-format.md).
 

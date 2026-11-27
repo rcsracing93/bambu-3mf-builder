@@ -16,7 +16,7 @@ import studio_slice as SS  # noqa: E402
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--studio-dir", required=True)
-ap.add_argument("--version", required=True, choices=["2.8.2", "2.9.1"])
+ap.add_argument("--version", required=True, choices=["2.8.2", "2.9.1", "2.9.2"])
 a = ap.parse_args()
 
 fails = []

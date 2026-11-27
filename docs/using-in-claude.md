@@ -147,7 +147,7 @@ together with a model you want ready to print. "Use the 3MF builder" always work
 - It does not rotate or auto-orient a model. Export the model in the orientation you want to print.
 - It does not paint colors on a model. Each color must be a separate model file, exported from the same CAD file so the parts line up.
 - In a project you already have, it does not add, remove or move objects. It changes settings, presets, colors, filament slots, plate type and layer actions only.
-- It changes projects saved by Bambu Studio 2.8.2 and 2.9.1 for one-nozzle printers. Save an older project in Studio 2.9.1 first. A two-nozzle project (H2D, X2D) cannot be changed.
+- It changes projects saved by Bambu Studio 2.8.2, 2.9.1 and 2.9.2 (and a newer 2.x, with a warning) for one-nozzle printers. Save an older project in Studio 2.9.2 first. A two-nozzle project (H2D, X2D) cannot be changed.
 - It makes no flow or pressure advance calibration.
 - It does not work with Orca Slicer, PrusaSlicer or Cura projects.
 - It does not arrange objects to fit the plate like Studio's auto-arrange; it places them in a grid or where you say.

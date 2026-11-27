@@ -9,10 +9,10 @@ import re
 from . import rules_package, validate
 from .patch_job import PatchRefused
 
-ACCEPT = {(2, 8, 2): "2.8.2.61", (2, 9, 1): "2.9.1.70"}
-SUPPORTED_BUILDS = ("02.08.02.61", "02.09.01.70")
+ACCEPT = {(2, 8, 2): "2.8.2.61", (2, 9, 1): "2.9.1.70", (2, 9, 2): "2.9.2.62"}
+SUPPORTED_BUILDS = ("02.08.02.61", "02.09.01.70", "02.09.02.62")
 HEAD_CAP = 1024 ** 2
-OPEN_IT = "Open it and save it in Bambu Studio 2.9.1 first."
+OPEN_IT = "Open it and save it in Bambu Studio 2.9.2 first."
 EMBEDDED_RE = re.compile(r"^Metadata/(filament|process|machine)_settings_\d+\.config$")
 GCODE_RE = re.compile(r"^Metadata/plate_\d+\.gcode$")
 SLICED_ENTRY_RE = re.compile(r"^(Metadata/plate_\d+\.gcode(\.md5)?|Metadata/_rels/model_settings\.config\.rels)$")
@@ -80,7 +80,7 @@ def open_source(path):
     s.app = m.group(1).decode("utf-8", "replace").strip() if m else ""
     am = re.match(r"^BambuStudio-(\d+\.\d+\.\d+\.\d+)$", s.app)
     if not am:
-        raise PatchRefused(["This file was saved by %r, not by Bambu Studio. Patch mode only accepts files saved by Bambu Studio 2.8.2 or 2.9.1 (Orca Slicer, PrusaSlicer and other programs are not supported). %s" % (s.app or "an unknown program", OPEN_IT)])
+        raise PatchRefused(["This file was saved by %r, not by Bambu Studio. Patch mode only accepts files saved by Bambu Studio 2.8.2, 2.9.1, 2.9.2 or a newer 2.x (Orca Slicer, PrusaSlicer and other programs are not supported). %s" % (s.app or "an unknown program", OPEN_IT)])
     raw_cfg = pkg.raw("Metadata/project_settings.config")
     if raw_cfg is None:
         raise PatchRefused(["project_settings.config is too large to read"])

@@ -80,7 +80,7 @@ def seg(cfg, key, slot, width):
 
 
 OUT = {}
-for ver in ("2.8.2", "2.9.1"):
+for ver in ("2.8.2", "2.9.1", "2.9.2"):
     for old, new in ((A1, P2S), (P2S, A1)):
         tag = "%s_%s_%s" % (SHORT[old], SHORT[new], ver.replace(".", ""))
         label = "[%s %s -> %s]" % (ver, SHORT[old], SHORT[new])
@@ -114,7 +114,7 @@ for ver in ("2.8.2", "2.9.1"):
             check(label + " runs", False, "%s: %s" % (type(e).__name__, e))
 
 # ---- keep_changes for the process: the output is exactly the builder's own file for the new printer ---------------------------------------------
-for ver in ("2.8.2", "2.9.1"):
+for ver in ("2.8.2", "2.9.1", "2.9.2"):
     t = ver.replace(".", "")
     for old, new in ((A1, P2S), (P2S, A1)):
         tag = "%s_%s_%s" % (SHORT[old], SHORT[new], t)
@@ -125,7 +125,7 @@ for ver in ("2.8.2", "2.9.1"):
               diff == [] and all(c[1] for c in r.checks), (diff, [c for c in r.checks if not c[1]]))
 
 # ---- designer changes: kept by variant name, or dropped --------------------------------------------------------------------------------------
-for ver in ("2.8.2", "2.9.1"):
+for ver in ("2.8.2", "2.9.1", "2.9.2"):
     t = ver.replace(".", "")
     a1 = build("dz_a1_" + t, ver, A1, f1_settings="nozzle_temperature = 231")
     r = run_job(a1, 'printer = "%s"\n[[filament]]\nslot = 1\nkeep_changes = true\n' % P2S, "keep_a1p2s_" + t)

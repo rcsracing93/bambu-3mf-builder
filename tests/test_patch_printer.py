@@ -118,7 +118,7 @@ def vrep(path, mode="default"):
 # ---- same-bed groups, derived from the vendored profiles ---------------------------------------------------------------------------------
 G1 = sorted(["Bambu Lab P1P 0.4 nozzle", "Bambu Lab P1S 0.4 nozzle", "Bambu Lab X1 0.4 nozzle", "Bambu Lab X1 Carbon 0.4 nozzle", "Bambu Lab X1E 0.4 nozzle"])
 G2 = sorted(["Bambu Lab A1 0.4 nozzle", "Bambu Lab P2S 0.4 nozzle"])
-for tag in ("2.8.2.61", "2.9.1.70"):
+for tag in ("2.8.2.61", "2.9.1.70", "2.9.2.62"):
     ps = ProfileSet(tag)
     check("[%s] same-bed group of the P1S: X1C, X1, X1E, P1S, P1P" % tag, patch_printer.same_bed_printers(ps, P1S) == G1, patch_printer.same_bed_printers(ps, P1S))
     check("[%s] same-bed group of the A1: A1, P2S (another height than the P1S)" % tag, patch_printer.same_bed_printers(ps, A1) == G2, patch_printer.same_bed_printers(ps, A1))

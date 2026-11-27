@@ -61,13 +61,44 @@ def files():
     return out
 
 
+def _versions():
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    from bambu3mf.profiles import STUDIO_VERSIONS
+    return STUDIO_VERSIONS
+
+
+def release_entries():
+    """[(relative path, bytes)] for the zip. A preset file under studio/<v>/profiles/BBL/ that is identical (after the trim) to the
+    same file of the previous supported version is left out; studio/<v>/profiles/BASE names that version, and
+    scripts/bambu3mf/profiles.py follows it. Three versions of the profiles fit under the size limit this way."""
+    vers = _versions()
+    prev_of = {v: vers[i - 1] for i, v in enumerate(vers) if i}
+    allf = [(rel, read_bytes(rel)) for rel in files()]
+    trimmed = {}
+    for rel, data in allf:                                    # first pass: every preset file of every version
+        parts = rel.replace(os.sep, "/").split("/")
+        if len(parts) >= 5 and parts[0] == "studio" and parts[2] == "profiles" and parts[3] == "BBL" and rel.endswith(".json"):
+            trimmed[(parts[1], "/".join(parts[3:]))] = data
+    out = []
+    for rel, data in allf:
+        parts = rel.replace(os.sep, "/").split("/")
+        if len(parts) >= 5 and parts[0] == "studio" and parts[2] == "profiles" and parts[3] == "BBL" and rel.endswith(".json"):
+            v = parts[1]
+            if v in prev_of and trimmed.get((prev_of[v], "/".join(parts[3:]))) == data:
+                continue
+        out.append((rel, data))
+    for v, p in sorted(prev_of.items()):
+        out.append((os.path.join("studio", v, "profiles", "BASE"), (p + "\n").encode()))
+    return sorted(out, key=lambda e: e[0].replace(os.sep, "/"))
+
+
 def write(zpath, prefix, extra=None):
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-        for rel in files():
+        for rel, data in release_entries():
             i = zipfile.ZipInfo(prefix + rel.replace(os.sep, "/"), STAMP)
             i.compress_type = zipfile.ZIP_DEFLATED
             i.external_attr = (0o755 if rel.endswith(".py") and rel.startswith("scripts" + os.sep) else 0o644) << 16
-            z.writestr(i, read_bytes(rel))
+            z.writestr(i, data)
         for name, path in (extra or []):
             i = zipfile.ZipInfo(name, STAMP)
             i.external_attr = 0o644 << 16

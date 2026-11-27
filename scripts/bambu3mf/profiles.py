@@ -14,8 +14,12 @@ import unicodedata
 
 from . import userpresets
 
-STUDIO_VERSIONS = ("2.8.2.61", "2.9.1.70")
+STUDIO_VERSIONS = ("2.8.2.61", "2.9.1.70", "2.9.2.62")
 KINDS = ("machine", "process", "filament")
+# Studio 2.9.2 Tab.cpp TabPrintLayer: the height-range tab shows layer_height and PrintRegionConfig less cross_part_color_penetration.
+RANGE_EXCLUDED = {"cross_part_color_penetration"}
+# Studio 2.9.2 Tab.cpp TabPrintPart::toggle_options: shown only when every selected volume is a model part (not a modifier).
+MODEL_PART_ONLY = {"cross_part_color_penetration"}
 META_KEYS = {"type", "name", "inherits", "include", "from", "instantiation", "setting_id",
              "filament_id", "description", "version", "alias", "renamed_from"}
 
@@ -41,6 +45,7 @@ class ProfileSet:
         self.options = {o["key"]: o for o in opts["options"]}
         self.project_options = set(opts["project_options"])
         self.region_options = set(opts.get("region_options") or [])   # PrintRegionConfig: what a part or a height range may set
+        self.range_options = self.region_options - RANGE_EXCLUDED      # a height range: PrintRegionConfig less the excluded keys
         self.tag_version = opts["studio_tag"].lstrip("v")
         self.defaults = {o["key"]: o["default"] for o in opts["options"]}
         self.valid_keys = set(self.defaults)
@@ -131,10 +136,30 @@ class ProfileSet:
                 raise ProfileError("No %s preset named %r in Studio %s.%s%s" % (
                     kind, name, self.version, self._miss_note(kind, name, hint),
                     (" Closest: " + "; ".join(hint)) if hint else ""))
-            with open(os.path.join(self.dir, "BBL", sub)) as f:
+            with open(self._preset_path(sub)) as f:
                 data = json.load(f)
             self._file_cache[key] = self._aux_fan_fallback(data)
         return self._file_cache[key]
+
+    def _preset_path(self, sub):
+        """The preset file. The repo has every file of every version. The release zip stores a preset file once: a file that is
+        identical (after the release trim) to the same file of the previous version is left out, and profiles/BASE names that
+        version (scripts/make_release.py). Only a file that BBL.json of this version lists is read, so the chain never finds a
+        preset that this version does not have."""
+        d = self.dir
+        for _ in range(len(STUDIO_VERSIONS)):
+            p = os.path.join(d, "BBL", sub)
+            if os.path.exists(p):
+                return p
+            try:
+                with open(os.path.join(d, "BASE")) as f:
+                    base = f.read().strip()
+            except OSError:
+                break
+            if base not in STUDIO_VERSIONS:
+                break
+            d = os.path.join(os.path.dirname(os.path.dirname(d)), base, "profiles")
+        return os.path.join(self.dir, "BBL", sub)            # the open fails with the path of this version
 
     # Studio 2.9.1 (Config.cpp, s_aux_fan_standard_to_optional_keys, applied to every config level as it loads):
     # the optional auxiliary fan has no entry in any profile, so a level that sets the standard fan key and not the

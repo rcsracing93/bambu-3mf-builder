@@ -133,16 +133,24 @@ SKIP_KEYS = {"different_settings_to_system", "inherits_group",   # preset bookke
              "version"}
 
 
+def _at_least(version, want):
+    try:
+        return tuple(int(x) for x in str(version).split(".")[:3]) >= want
+    except ValueError:
+        return False
+
+
 def compare_config(written, blk, options, n, version=None):
     """The builder's config must reach the G-code. Returns (differ, missing) lists of key names."""
     differ, missing = [], []
+    v291 = _at_least(version, (2, 9, 1))                 # the 2.9.1 behaviour below is also seen in 2.9.2 (checked on navi with Studio 2.9.2.62)
     for k, v in written.items():
-        if k in SKIP_KEYS or k in MISSING_OK or (version == "2.9.1" and k in MISSING_OK_291):
+        if k in SKIP_KEYS or k in MISSING_OK or (v291 and k in MISSING_OK_291):
             continue
         if k not in blk:
             missing.append(k)
             continue
-        if version == "2.9.1" and k in EMPTY_IN_GCODE_291 and not blk[k].replace(";", "").replace(",", "").strip('" '):
+        if v291 and k in EMPTY_IN_GCODE_291 and not blk[k].replace(";", "").replace(",", "").strip('" '):
             continue
         if not same_value(v, blk[k], VARIANT_LIKE.get(k) or options.get(k), n, written):
             differ.append("%s: written=%s gcode=%s" % (k, ",".join(map(str, v)) if isinstance(v, list) else v, blk[k][:40]))

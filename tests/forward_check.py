@@ -2,7 +2,8 @@
 """Forward-compatible mode with the REAL installed Studio (run on a computer with Bambu Studio installed).
 Every example is built with studio = "auto" and --slice-check, then sliced again by this script in a new, empty folder. Graded per example:
   - build exit 0, the 3MF exists, the builder's own slice check passed,
-  - when the installed Studio is newer than the newest supported version: the forward warning is printed and is in the summary file,
+  - when the installed Studio is newer than the newest supported version: the forward warning is printed and is in the summary file;
+    when it is supported exactly: no forward warning. The built file's project version is the version the build chose,
   - fresh slice: the output folder is new and empty before Studio starts; Studio exits 0; result.json says return_code 0;
     result.json and every G-code file are newer than the start of the run; at least one plate_N.gcode is made,
   - the wall-clock time of the whole Studio process (launch to exit), its own CPU time (a hand-off to another Studio would use almost
@@ -12,7 +13,7 @@ Every example is built with studio = "auto" and --slice-check, then sliced again
 Expectations come from the job FILE and the mesh files (tests/harness.py), never from the builder's output.
 Usage: python3 tests/forward_check.py [--studio-path PATH] [--report FILE] [--only name,name]
 Exit 0 when every example passed and at least one was checked."""
-import glob, hashlib, json, os, re, resource, shutil, subprocess, sys, tempfile, time
+import glob, hashlib, json, os, re, resource, shutil, subprocess, sys, tempfile, time, zipfile
 
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, ".."))
@@ -164,9 +165,18 @@ def main(argv):
             checked += 1
             md = out[:-4] + ".summary.md"
             mdtext = open(md).read() if os.path.exists(md) else ""
-            warn_ok = (not expect_warn) or (choice.warning in r.stdout and choice.warning in mdtext)
+            if expect_warn:
+                warn_ok = choice.warning in r.stdout and choice.warning in mdtext
+            else:                                     # the installed Studio is supported exactly: no forward warning at all
+                warn_ok = "Built for Studio" not in r.stdout and "Built for Studio" not in mdtext
+            if os.path.exists(out):
+                fver = json.loads(zipfile.ZipFile(out).read("Metadata/project_settings.config")).get("version")
+                want_ver = ".".join("%02d" % int(x) for x in choice.version.split("."))
+                if fver != want_ver:
+                    warn_ok = False
+                    r = subprocess.CompletedProcess(r.args, r.returncode, r.stdout, r.stderr + " file version %s, expected %s" % (fver, want_ver))
             build_ok = r.returncode == 0 and os.path.exists(out) and "slice check (" in r.stdout and warn_ok
-            probs = [] if build_ok else ["build rc %d, warning shown %s, stderr: %s" % (r.returncode, warn_ok, r.stderr.strip()[-300:])]
+            probs = [] if build_ok else ["build rc %d, warning and file version as expected: %s, stderr: %s" % (r.returncode, warn_ok, r.stderr.strip()[-300:])]
             fs = fresh_slice(exe, out, os.path.join(tmp, name + ".slice")) if os.path.exists(out) else {"problems": ["no 3MF"], "wall": 0.0, "gcodes": [], "result": None}
             probs += fs["problems"]
             sha, size = sha_size(fs["gcodes"]) if fs["gcodes"] else ("-", 0)

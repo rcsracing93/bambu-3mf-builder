@@ -128,12 +128,12 @@ LISTRULES = ("R5", "R6", "R7", "R8", "R11", "R14", "R35")
 
 # ---- bases ---------------------------------------------------------------------------------------------------------------------------------
 B = {}
-for v in ("2.8.2", "2.9.1"):
+for v in ("2.8.2", "2.9.1", "2.9.2"):
     t = v.replace(".", "")
     B["split " + v] = build("multi" + t, v)
     B["nonsplit " + v] = to_nonsplit(build("one" + t, v, nfil=4), os.path.join(tmp, "ns" + t + ".3mf")) if False else None
 # the non-split form needs a one-object file
-for v in ("2.8.2", "2.9.1"):
+for v in ("2.8.2", "2.9.1", "2.9.2"):
     t = v.replace(".", "")
     jp = os.path.join(tmp, "oneobj" + t + ".toml")
     open(jp, "w").write(open(os.path.join(H, "jobs", "four_color_%s.toml" % ("282" if v == "2.8.2" else "291"))).read().replace('output  = "f4out.3mf"', 'output = "oneobj%s.3mf"' % t).replace("../data/", MESH + "/"))
@@ -169,7 +169,7 @@ for form, base in B.items():
         check("[%s] slot add runs" % form, False, "%s: %s" % (type(e).__name__, e))
 
 # the result equals what the builder makes for five filaments (same job, one more filament)
-for ver in ("2.8.2", "2.9.1"):
+for ver in ("2.8.2", "2.9.1", "2.9.2"):
     t = ver.replace(".", "")
     base4, base5 = build("b4_" + t, ver, 4), build("b5_" + t, ver, 5)
     r = run_job(base4, ADD5, "cmp_" + t)
@@ -572,7 +572,7 @@ def plate_vals(path, key):
     return re.findall(r'<metadata key="%s" value="([^"]*)"' % key, ms_of(path))
 
 
-for tag in ("2.8.2", "2.9.1"):
+for tag in ("2.8.2", "2.9.1", "2.9.2"):
     PSQ = with_plate_lists(B["split " + tag], "d6_" + tag.replace(".", ""), "2 1 3 4", "2 4 1 2 3 4 5 9 4 3 2 1", "2")
     check("D6 [%s] fixture validates (0 errors)" % tag, not vrep(PSQ).errors, [str(f)[:90] for f in vrep(PSQ).errors][:3])
     r = run_job(PSQ, ADD5, "d6add")

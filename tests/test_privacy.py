@@ -81,7 +81,7 @@ finally:
     shutil.rmtree(tmp, ignore_errors=True)
 # nit: every key in HOST_KEYS is a real setting of both Studio tags (no invented key)
 import json
-for _v in ("2.8.2.61", "2.9.1.70"):
+for _v in ("2.8.2.61", "2.9.1.70", "2.9.2.62"):
     _keys = {o["key"] for o in json.load(open(os.path.join(H, "..", "studio", _v, "options.json")))["options"]}
     check("HOST_KEYS exist in Studio %s" % _v, all(k in _keys for k in privacy.HOST_KEYS), [k for k in privacy.HOST_KEYS if k not in _keys])
 print("\n%d failed" % len(fails) if fails else "\nall passed")

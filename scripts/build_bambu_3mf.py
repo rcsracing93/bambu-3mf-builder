@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a Bambu Studio project 3MF from a job file.
 Usage: build_bambu_3mf.py job.toml [--out file.3mf] [--slice-check [--studio-path PATH]] [--no-summary] [--user-presets DIR] [--strict-version]
-       build_bambu_3mf.py --list printer|process|filament [--studio 2.9.1] [--printer "Bambu Lab P1S 0.4 nozzle"] [--match text]
+       build_bambu_3mf.py --list printer|process|filament [--studio 2.9.2] [--printer "Bambu Lab P1S 0.4 nozzle"] [--match text]
 --slice-check slices the built file in your installed Bambu Studio and says whether it worked. The program is found in the usual
 install places; --studio-path (a program, an app or an install folder) or the BAMBU_STUDIO_PATH variable override that.
 A summary file <name>.summary.md is written next to the 3MF (settings, overrides, warnings; with --slice-check also Studio's time and
@@ -37,9 +37,9 @@ def list_presets(argv):
     from bambu3mf.job import STUDIO_ALIASES
     kinds = {"printer": "machine", "process": "process", "filament": "filament"}
     if not argv or argv[0] not in kinds:
-        print("Usage: --list printer|process|filament [--studio 2.9.1] [--printer NAME] [--match text]", file=sys.stderr)
+        print("Usage: --list printer|process|filament [--studio 2.9.2] [--printer NAME] [--match text]", file=sys.stderr)
         return 2
-    ver = _opt(argv, "--studio", "2.9.1")
+    ver = _opt(argv, "--studio", "2.9.2")
     if ver not in STUDIO_ALIASES:
         print("--studio must be one of: %s" % ", ".join(sorted(k for k in STUDIO_ALIASES if k.count(".") == 2)), file=sys.stderr)
         return 2

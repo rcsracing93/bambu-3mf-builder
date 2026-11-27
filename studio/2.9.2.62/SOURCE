@@ -1,0 +1,5 @@
+repository: https://github.com/bambulab/BambuStudio
+tag: v02.09.02.62
+commit: 23a33758933e712c6041e1f8f135f7d6b50004aa
+files: resources/profiles/BBL.json, BBL/*.json, BBL/{machine,process,filament}/*.json (copied unchanged, 2872 files)
+license: AGPL-3.0 (BambuStudio)

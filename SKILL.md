@@ -27,9 +27,9 @@ Do not use it to slice, to make G-code, to change a mesh inside an existing proj
 ## Steps
 
 1. Ask only what is missing: printer model and nozzle, filament (type and color per slot), mesh files, and any setting the user cares about.
-   Use real preset names. List them with `python3 scripts/build_bambu_3mf.py --list printer|process|filament --studio 2.9.1`
+   Use real preset names. List them with `python3 scripts/build_bambu_3mf.py --list printer|process|filament --studio 2.9.2`
    if the user is unsure (see references/job-format.md for the exact preset rules).
-2. Studio version: leave `studio` out and the builder detects the installed one (newest supported if none). Set `studio = "2.8.2"` or `"2.9.1"` only to force it. A file built for 2.8.2 also opens in 2.9.1. If the installed Studio is newer than the newest supported version, the builder still builds (for the newest supported version) and prints a warning: tell the user that Studio opens the file as an older project and keeps all settings. `strict_version = true` (or `--strict-version`) turns this into a stop.
+2. Studio version: leave `studio` out and the builder detects the installed one (newest supported if none). Set `studio = "2.8.2"`, `"2.9.1"` or `"2.9.2"` only to force it. A file built for an older version also opens in a newer 2.x. If the installed Studio is newer than the newest supported version, the builder still builds (for the newest supported version) and prints a warning: tell the user that Studio opens the file as an older project and keeps all settings. `strict_version = true` (or `--strict-version`) turns this into a stop.
 3. Write the job file (references/job-format.md; examples in examples/). One `[[filament]]` per slot, one `[[object]]` per thing
    on the plate, one `[[object.part]]` per mesh.
 4. Build: `python3 scripts/build_bambu_3mf.py job.toml --out project.3mf`. The builder checks the whole job first and prints every
@@ -43,7 +43,7 @@ Do not use it to slice, to make G-code, to change a mesh inside an existing proj
 
 When the user already has a Studio project and wants a change (a colour, a preset, a setting, the plate type, a pause) and not a new build,
 write a job with `patch = "file.3mf"` (references/job-format.md, "Patch mode") and run the same command. The input must be saved by
-Studio 2.8.2 or 2.9.1 (or a newer 2.x, with a warning) with one nozzle; anything else is refused with the reason. A sliced file is accepted (its G-code is dropped, with a warning).
+Studio 2.8.2, 2.9.1 or 2.9.2 (or a newer 2.x, with a warning) with one nozzle; anything else is refused with the reason. A sliced file is accepted (its G-code is dropped, with a warning).
 Geometry is never changed. A new filament slot can be added (`slot = n + 1`); the last slot can be removed if nothing uses it. The designer's credit
 (title, designer, licence) stays, local ids and paths are removed. A printer change (`printer = "..."`) works between printers with the same bed and nozzle only (X1 Carbon, X1, X1E, P1S, P1P; A1 and P2S, where the per-variant lists are cut again for the new printer); presets follow Studio's alias match, exactly one candidate or a refusal that names the slot. Print-host settings are blanked and a path in a setting is warned about. A swapped preset drops the designer's changes on that slot (the summary lists them);
 `keep_changes = true` keeps them. The output is always a new file; read the summary to the user, including its warnings.

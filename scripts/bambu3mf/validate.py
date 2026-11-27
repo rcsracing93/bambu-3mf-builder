@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from . import modes, privacy, wipetower
+from .profiles import RANGE_EXCLUDED
 
 MAX_ENTRIES = 5000
 MAX_TOTAL = 6 * 1024 ** 3          # uncompressed bytes in the whole archive
@@ -682,7 +683,7 @@ def check_height_ranges(pkg, rep, cfg, ps):
             rep.warn("R40", W, w_, cls=modes.KEEP)
         if region is not None:
             for lo, hi, opts in rs:
-                bad = sorted(k for k in opts if k not in ("layer_height", "extruder") and k not in region)
+                bad = sorted(k for k in opts if k not in ("layer_height", "extruder") and (k not in region or k in RANGE_EXCLUDED))
                 if bad:
                     rep.err("R40", W, "%s range %s-%s mm: %s cannot be set in a height range (Studio uses only layer_height and the settings a part can have)" % (
                         where, rg._g(lo), rg._g(hi), ", ".join(bad)), cls=modes.KEEP)

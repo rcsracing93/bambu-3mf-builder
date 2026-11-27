@@ -7,7 +7,7 @@ import difflib
 import json
 import os
 
-from .profiles import ProfileError, ProfileSet, STUDIO_VERSIONS
+from .profiles import ProfileError, ProfileSet, STUDIO_VERSIONS, MODEL_PART_ONLY
 from .serialize import normalize
 from . import studio_detect
 from . import calibration
@@ -18,7 +18,8 @@ try:
 except ImportError:                      # Python 3.8-3.10: vendored tomli 2.0.1 (MIT, scripts/bambu3mf/_vendor/tomli)
     from ._vendor import tomli as tomllib
 
-STUDIO_ALIASES = {"2.8.2": "2.8.2.61", "2.8.2.61": "2.8.2.61", "2.9.1": "2.9.1.70", "2.9.1.70": "2.9.1.70"}
+STUDIO_ALIASES = {"2.8.2": "2.8.2.61", "2.8.2.61": "2.8.2.61", "2.9.1": "2.9.1.70", "2.9.1.70": "2.9.1.70",
+                  "2.9.2": "2.9.2.62", "2.9.2.62": "2.9.2.62"}
 TOP_KEYS = {"studio", "output", "title", "printer", "process", "plate_type", "settings", "filament", "object",
             "layer_gcode", "temperature_tower", "purge", "allow_large", "strict_version"}
 BAD_NAME_CHARS = '<>:/\\?*"|'          # Studio drops such names (validator rule R31)
@@ -140,7 +141,8 @@ PRINT_ALIASES = {"walls": "wall_loops", "infill": "sparse_infill_density", "infi
 FILAMENT_ALIASES = {"nozzle_temp": "nozzle_temperature", "nozzle_temp_first_layer": "nozzle_temperature_initial_layer",
                     "flow": "filament_flow_ratio"}
 PLATE_KEY = {"Cool Plate": "cool_plate_temp", "Engineering Plate": "eng_plate_temp", "High Temp Plate": "hot_plate_temp",
-             "Textured PEI Plate": "textured_plate_temp", "Supertack Plate": "supertack_plate_temp"}
+             "Textured PEI Plate": "textured_plate_temp", "Supertack Plate": "supertack_plate_temp",
+             "3D Effect Plate": "effect_plate_temp"}                  # Studio 2.9.2 and newer (curr_bed_type enum)
 PLATE_BED_ALIASES = ("bed_temp", "bed_temp_first_layer")      # resolved from the job's plate_type, see _settings_table
 ALIASES = {"print": PRINT_ALIASES, "filament": FILAMENT_ALIASES}
 _GENERATED = None
@@ -175,7 +177,7 @@ def _height_ranges(raw, by, ver, w, chk, ps, nfil):
     if not isinstance(raw, list):
         chk.err(w + ".height_range", "use [[object.height_range]] tables")
         return out
-    region = getattr(ps, "region_options", None) or set()
+    region = getattr(ps, "range_options", None) or set()
     for i, r in enumerate(raw, 1):
         rw = "%s height_range #%d" % (w, i)
         if not isinstance(r, dict):
@@ -469,7 +471,10 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
     if raw.get("plate_type") is not None:
         pt = str(raw["plate_type"])
         names = ps.bed_types
-        if pt not in names:
+        if pt not in names and pt in PLATE_KEY:
+            chk.err("plate_type", "%s needs Studio 2.9.2 or newer; this job builds for Studio %s. Set studio = \"2.9.2\", or choose one of: %s" % (
+                pt, ver, ", ".join(sorted(names))))
+        elif pt not in names:
             chk.err("plate_type", "%r is not a plate type. Choose one of: %s" % (pt, ", ".join(sorted(names))))
         else:
             job.plate_type = pt
@@ -617,6 +622,10 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
                 pe["mesh"] = full
             pe["settings"] = _settings_table(p.get("settings", {}), ("print",), by, ver, pw + ".settings", chk,
                                              "[object.part.settings] (process settings only)")
+            if pe["type"] != "normal_part":
+                for k in sorted(MODEL_PART_ONLY & set(pe["settings"])):
+                    chk.err("%s.settings.%s" % (pw, k), "%s applies to a normal part only, not to a %s (Studio hides it for modifiers)" % (k, pe["type"]))
+                    pe["settings"].pop(k)
             ent["parts"].append(pe)
         job.objects.append(ent)
     if nfil:

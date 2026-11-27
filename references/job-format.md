@@ -7,13 +7,13 @@ problem with its key name, and builds nothing until the file is clean.
 
 | Key | Required | Meaning |
 |---|---|---|
-| `studio` | no | `"auto"` (default: the Studio installed on this computer, or the newest supported one if none is found), `"2.9.1"` or `"2.8.2"`. The full tag (`"2.9.1.70"`) also works. A pinned version always builds for that version. With `"auto"` and a Studio that is newer than the newest supported version, the file is built for the newest supported version with a warning in the console and the summary file (Studio opens an older 2.x project with all its settings). A newer MAJOR version (3.x) gets a stronger warning, and `--slice-check` runs by itself when the Studio program is found. An installed Studio older than the oldest supported version is an error, unless the job pins a supported version. A Studio between two supported versions builds for the nearest one below it, with a warning. |
+| `studio` | no | `"auto"` (default: the Studio installed on this computer, or the newest supported one if none is found), `"2.9.2"`, `"2.9.1"` or `"2.8.2"`. The full tag (`"2.9.2.62"`) also works. A pinned version always builds for that version. With `"auto"` and a Studio that is newer than the newest supported version, the file is built for the newest supported version with a warning in the console and the summary file (Studio opens an older 2.x project with all its settings). A newer MAJOR version (3.x) gets a stronger warning, and `--slice-check` runs by itself when the Studio program is found. An installed Studio older than the oldest supported version is an error, unless the job pins a supported version. A Studio between two supported versions builds for the nearest one below it, with a warning. |
 | `strict_version` | no | `true` keeps the old hard stop: with `"auto"`, any installed Studio that is not a supported version exactly is an error. The `--strict-version` flag does the same. Default `false`. |
 | `output` | no | Output file name. `--out` on the command line wins. |
 | `title` | no | Project title shown by Studio. |
 | `printer` | yes | Printer preset, e.g. `"Bambu Lab P1S 0.4 nozzle"`. |
 | `process` | yes | Process preset made for that printer, e.g. `"0.20mm Standard @BBL X1C"`. |
-| `plate_type` | no | Bed type, e.g. `"Textured PEI Plate"`. The builder refuses a type the filaments do not support. |
+| `plate_type` | no | Bed type, e.g. `"Textured PEI Plate"`. The builder refuses a type the filaments do not support (bed temperature 0 in the preset). `"3D Effect Plate"` needs Studio 2.9.2; its bed temperature keys are `effect_plate_temp` and `effect_plate_temp_initial_layer`. In 2.9.2 the Bambu PLA Basic, Matte and Silk+ presets also support the Engineering Plate (55 °C). |
 | `allow_large` | no | `true` lets a build go on above 10 million triangles in total (default `false`). Use it only after the user agreed. |
 | `purge` | no | `"auto"` (default: Studio's color-based purge volumes) or `"default"` (140 + 140 mm3 for every pair). |
 | `settings` | no | Table of Studio process settings, applied to the whole project. |
@@ -246,7 +246,7 @@ The input must be saved by a supported Bambu Studio version (any build; a build 
 and must validate with 0 errors in default mode. A file saved by a newer 2.x Studio is accepted with a warning: it is patched with the
 rules of the newest supported version, a setting that version does not know is a warning and is kept as it is, and every entry the patch
 does not change stays byte-identical. A file from a newer MAJOR version (3.x) is refused. Orca Slicer, PrusaSlicer, older Studio versions and X2D / H2D
-files are refused with "open and save it in Bambu Studio 2.9.1 first". A sliced file (it holds G-code) is accepted: the G-code and
+files are refused with "open and save it in Bambu Studio 2.9.2 first". A sliced file (it holds G-code) is accepted: the G-code and
 everything that belongs to it is dropped and a warning says so (see "Sliced input" below).
 A project that already holds user presets (a slot with a name that is not a system preset) is accepted.
 

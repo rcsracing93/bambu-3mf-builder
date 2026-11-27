@@ -9,7 +9,7 @@ ROOT = os.path.dirname(H)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, H)
 from bambu3mf.job import load_job, JobError, PRINT_ALIASES, FILAMENT_ALIASES, PLATE_BED_ALIASES, generated_aliases  # noqa: E402
-from bambu3mf.profiles import ProfileSet  # noqa: E402
+from bambu3mf.profiles import ProfileSet, STUDIO_VERSIONS  # noqa: E402
 import gen_aliases  # noqa: E402
 
 fails = []
@@ -18,7 +18,11 @@ def check(name, cond, extra=""):
     if not cond: fails.append(name)
 
 V282, V291 = "2.8.2.61", "2.9.1.70"
-PS = {V282: ProfileSet(V282), V291: ProfileSet(V291)}
+PS = {v: ProfileSet(v) for v in STUDIO_VERSIONS}
+
+
+def short(v):
+    return ".".join(v.split(".")[:3])
 DATA = json.load(open(gen_aliases.DATA, encoding="utf-8"))
 HAND = {"print": set(PRINT_ALIASES), "filament": set(FILAMENT_ALIASES) | set(PLATE_BED_ALIASES)}
 
@@ -72,38 +76,39 @@ def load(text):
     except JobError as e:
         return None, e.problems
 
-for v, short in ((V282, "2.8.2"), (V291, "2.9.1")):
-    j, err = load(job_text(short, process="walls = 3\ninfill = \"20%\"\ninfill_pattern = \"gyroid\"\ntop_layers = 5\nsupports = true\n",
+for v in STUDIO_VERSIONS:
+    sv = short(v)
+    j, err = load(job_text(sv, process="walls = 3\ninfill = \"20%\"\ninfill_pattern = \"gyroid\"\ntop_layers = 5\nsupports = true\n",
                            filament="nozzle_temp = 225\nflow = 0.97\nbed_temp = 60\n", plate='plate_type = "Textured PEI Plate"'))
     s = j.settings if j else {}
     fs = j.filaments[0]["settings"] if j else {}
     check("%s: hand table still works" % v, j and s.get("wall_loops") == "3" and s.get("sparse_infill_density") == "20%" and
           s.get("sparse_infill_pattern") == "gyroid" and s.get("top_shell_layers") == "5" and s.get("enable_support") == "1" and
           fs.get("nozzle_temperature") == "225" and fs.get("filament_flow_ratio") == "0.97" and fs.get("textured_plate_temp") == "60", err or (s, fs))
-    j, err = load(job_text(short, process="arc_fitting = true\nelephant_foot_compensation = 0.2\nbridge_direction = 45\n",
+    j, err = load(job_text(sv,process="arc_fitting = true\nelephant_foot_compensation = 0.2\nbridge_direction = 45\n",
                            filament="max_volumetric_speed = 12\ndensity = 1.27\n"))
     s = j.settings if j else {}
     fs = j.filaments[0]["settings"] if j else {}
     check("%s: generated aliases work (print and filament)" % v, j and s.get("enable_arc_fitting") == "1" and s.get("elefant_foot_compensation") == "0.2"
           and s.get("bridge_angle") == "45" and fs.get("filament_max_volumetric_speed") == "12" and fs.get("filament_density") == "1.27", err or (s, fs))
-    j, err = load(job_text(short, process="arc_fitting = true\nenable_arc_fitting = false\n"))
+    j, err = load(job_text(sv,process="arc_fitting = true\nenable_arc_fitting = false\n"))
     check("%s: alias with its real key together is an error" % v, j is None and any("another spelling of enable_arc_fitting" in e for e in err), err)
-    j, err = load(job_text(short, filament="max_volumetric_speed = 12\nfilament_max_volumetric_speed = 10\n"))
+    j, err = load(job_text(sv,filament="max_volumetric_speed = 12\nfilament_max_volumetric_speed = 10\n"))
     check("%s: filament alias with its real key together is an error" % v, j is None and any("another spelling" in e for e in err), err)
-    j, err = load(job_text(short, process="flow_ratio = 0.9\n"))
+    j, err = load(job_text(sv,process="flow_ratio = 0.9\n"))
     check("%s: a filament alias in [settings] is refused" % v, j is None, err)
 
 # an alias of one version only: works there, unknown in the other
 one = [(k, a, ents[0][0], ents[0][1][0]) for k, t in DATA["aliases"].items() for a, ents in t.items() if len(ents) == 1 and len(ents[0][1]) == 1]
 check("some aliases are valid in one version only", len(one) > 0)
 for kind, a, key, ver in [x for x in one if x[0] == "print"][:1]:
-    other = V282 if ver == V291 else V291
+    other = [v for v in STUDIO_VERSIONS if v != ver][0]
     # use a value the option accepts: take its default
     dflt = PS[ver].options[key]["default"]
     lit = ("true" if dflt in ("1", 1, True) else "false") if PS[ver].options[key]["type"].startswith("coBool") else json.dumps(dflt)
-    jv, ev = load(job_text("2.9.1" if ver == V291 else "2.8.2", process="%s = %s\n" % (a, lit)))
+    jv, ev = load(job_text(short(ver), process="%s = %s\n" % (a, lit)))
     check("version-only alias %s works in %s" % (a, ver), jv is not None and key in jv.settings, ev)
-    jo, eo = load(job_text("2.8.2" if ver == V291 else "2.9.1", process="%s = %s\n" % (a, lit)))
+    jo, eo = load(job_text(short(other), process="%s = %s\n" % (a, lit)))
     check("version-only alias %s is unknown in %s" % (a, other), jo is None and any("has no setting" in e for e in eo), eo)
 
 # ---- docs --------------------------------------------------------------------------------------------------------------

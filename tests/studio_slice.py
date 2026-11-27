@@ -289,7 +289,7 @@ def main():
     ap.add_argument("--other-studio-dir")
     ap.add_argument("--other-version")
     ap.add_argument("--jobs", nargs="*")
-    ap.add_argument("--build-version", help="build every job for this Studio version (2.8.2 or 2.9.1) instead of the job's own")
+    ap.add_argument("--build-version", help="build every job for this Studio version (2.8.2, 2.9.1 or 2.9.2) instead of the job's own")
     ap.add_argument("--report")
     ap.add_argument("--work")
     a = ap.parse_args()
