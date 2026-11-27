@@ -11,9 +11,10 @@ Every example is built with studio = "auto" and --slice-check, then sliced again
   - content: a temperature tower has each step temperature (M104) on its layer; a pause sits on the job's layer; a multi-colour job
     loads exactly the tools the job asks for, in order (M620 S<n>A, one load per stacked part); no two examples give the same G-code.
 Expectations come from the job FILE and the mesh files (tests/harness.py), never from the builder's output.
-Usage: python3 tests/forward_check.py [--studio-path PATH] [--report FILE] [--only name,name]
+Usage: python3 tests/forward_check.py [--studio-path PATH] [--report FILE] [--only name,name] [-j N]
+-j N runs N examples at a time (default: the CPU count); the report keeps the example order.
 Exit 0 when every example passed and at least one was checked."""
-import glob, hashlib, json, os, re, resource, shutil, subprocess, sys, tempfile, time, zipfile
+import glob, hashlib, json, os, re, shutil, subprocess, sys, tempfile, threading, time, zipfile
 
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, ".."))
@@ -23,6 +24,7 @@ from bambu3mf import studio_detect, versions, job as jobmod, mesh as meshmod  # 
 from bambu3mf.profiles import STUDIO_VERSIONS  # noqa: E402
 from compare_release import job_copy  # noqa: E402
 import harness  # noqa: E402
+import pool  # noqa: E402
 
 tomllib = jobmod.tomllib
 
@@ -35,17 +37,25 @@ def fresh_slice(exe, f3mf, outdir, timeout=900):
     os.makedirs(outdir)
     if os.listdir(outdir):
         probs.append("output folder not empty before the run")
-    ru0 = resource.getrusage(resource.RUSAGE_CHILDREN)
     t0 = time.time()
     try:
-        p = subprocess.run([exe, "--slice", "0", "--outputdir", outdir, os.path.abspath(f3mf)],
-                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+        # Studio's console output goes to a log next to the folder; os.wait4 gives the CPU time of this one child, so the
+        # number stays right when several slices run at once (shows the process sliced, not a hand-off)
+        with open(outdir + ".log", "wb") as log:
+            p = subprocess.Popen([exe, "--slice", "0", "--outputdir", outdir, os.path.abspath(f3mf)], stdout=log, stderr=subprocess.STDOUT,
+                                 cwd=os.path.dirname(outdir))
+            timer = threading.Timer(timeout, p.kill)
+            timer.start()
+            try:
+                _pid, status, ru = os.wait4(p.pid, 0)
+            finally:
+                timer.cancel()
+            p.returncode = os.WEXITSTATUS(status) if os.WIFEXITED(status) else -os.WTERMSIG(status)
         rc = p.returncode
-    except (OSError, subprocess.TimeoutExpired) as e:
-        return {"problems": probs + ["Studio could not be run: %s" % e], "wall": time.time() - t0, "gcodes": [], "result": None}
+    except OSError as e:
+        return {"problems": probs + ["Studio could not be run: %s" % e], "wall": time.time() - t0, "cpu": 0.0, "gcodes": [], "result": None}
     wall = time.time() - t0
-    ru1 = resource.getrusage(resource.RUSAGE_CHILDREN)
-    cpu = (ru1.ru_utime - ru0.ru_utime) + (ru1.ru_stime - ru0.ru_stime)   # CPU time of the Studio process itself (shows it sliced, not a hand-off)
+    cpu = ru.ru_utime + ru.ru_stime
     if rc != 0:
         probs.append("Studio exit %d" % rc)
     rj = os.path.join(outdir, "result.json")
@@ -152,17 +162,16 @@ def main(argv):
         print("\n".join(lines))
         return 1
     examples = sorted(f for f in os.listdir(os.path.join(ROOT, "examples")) if f.endswith(".toml") and not f.startswith("_"))
-    checked, bad, shas, n_content = 0, [], {}, 0
-    for ex in examples:
+    examples = [ex for ex in examples if not only or ex[:-5] in only]
+    t_all = time.time()
+
+    def one(ex):
         name = ex[:-5]
-        if only and name not in only:
-            continue
         j = job_copy(ROOT, ex, None)
         out = os.path.join(tmp, name + ".3mf")
         cmd = [sys.executable, "-I", os.path.join(ROOT, "scripts", "build_bambu_3mf.py"), j, "--out", out, "--slice-check", "--studio-path", exe]
         try:
             r = subprocess.run(cmd, capture_output=True, text=True)
-            checked += 1
             md = out[:-4] + ".summary.md"
             mdtext = open(md).read() if os.path.exists(md) else ""
             if expect_warn:
@@ -180,12 +189,7 @@ def main(argv):
             fs = fresh_slice(exe, out, os.path.join(tmp, name + ".slice")) if os.path.exists(out) else {"problems": ["no 3MF"], "wall": 0.0, "gcodes": [], "result": None}
             probs += fs["problems"]
             sha, size = sha_size(fs["gcodes"]) if fs["gcodes"] else ("-", 0)
-            if fs["gcodes"]:
-                if sha in shas:
-                    probs.append("same G-code SHA-256 as %s" % shas[sha])
-                shas.setdefault(sha, name)
             cc = content_checks(name, j, fs["gcodes"]) if fs["gcodes"] else []
-            n_content += len(cc)
             probs += ["%s: %s" % (c, d) for c, ok, d in cc if not ok]
             plates = []
             for g in fs["gcodes"]:
@@ -193,6 +197,16 @@ def main(argv):
                 plates.append("%s %s g" % (t or "n/a", ("%.2f" % gr) if gr is not None else "n/a"))
         finally:
             os.remove(j)
+        return name, probs, fs, sha, size, cc, plates
+
+    checked, bad, shas, n_content = 0, [], {}, 0
+    for name, probs, fs, sha, size, cc, plates in pool.run(one, examples, pool.jobs(argv)):
+        checked += 1
+        n_content += len(cc)
+        if fs["gcodes"]:                                  # in example order, after all ran
+            if sha in shas:
+                probs.append("same G-code SHA-256 as %s" % shas[sha])
+            shas.setdefault(sha, name)
         ok = not probs
         lines.append("%s %-22s %6.2f s wall %6.2f s CPU  %d plate(s)  %8d B  %s  %s" % ("PASS" if ok else "FAIL", name, fs["wall"], fs.get("cpu", 0.0), len(fs["gcodes"]), size, sha[:16], "; ".join(plates)))
         for c, cok, d in cc:
@@ -201,8 +215,8 @@ def main(argv):
             bad.append(name)
             for p in probs:
                 lines.append("     problem: %s" % p)
-    lines += ["", "%d examples checked, %d failed. %d content checks. %d distinct G-code hashes for %d examples." % (
-        checked, len(bad), n_content, len(shas), checked)]
+    lines += ["", "%d examples checked, %d failed. %d content checks. %d distinct G-code hashes for %d examples. Wall time %.1f s." % (
+        checked, len(bad), n_content, len(shas), checked, time.time() - t_all)]
     if checked == 0:
         lines.append("NOT CHECKED")
     text = "\n".join(lines) + "\n"

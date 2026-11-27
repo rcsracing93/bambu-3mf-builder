@@ -56,7 +56,8 @@ def files():
         for d, dirs, names in os.walk(p):
             dirs[:] = sorted(x for x in dirs if x not in SKIP_DIRS)
             for n in sorted(names):
-                if not n.endswith(".pyc") and n != "cli_config.json":
+                # examples/_cmp_*: temporary job copies of a running test (tests/compare_release.py job_copy), never released
+                if not n.endswith(".pyc") and n != "cli_config.json" and not n.startswith("_cmp_"):
                     out.append(os.path.relpath(os.path.join(d, n), ROOT))
     return out
 
@@ -70,10 +71,15 @@ def _versions():
 def release_entries():
     """[(relative path, bytes)] for the zip. A preset file under studio/<v>/profiles/BBL/ that is identical (after the trim) to the
     same file of the previous supported version is left out; studio/<v>/profiles/BASE names that version, and
-    scripts/bambu3mf/profiles.py follows it. Three versions of the profiles fit under the size limit this way."""
+    scripts/bambu3mf/profiles.py follows it. Three versions of the profiles fit under the size limit this way.
+
+    Dropping a version: the chain is made from STUDIO_VERSIONS at release time, and only studio/<v> folders of listed versions are
+    released. When the oldest version leaves the list, the new oldest version has no previous version, so it gets no BASE and is
+    stored with full files; no BASE can point outside the list (tests/test_release_roundtrip.py checks this)."""
     vers = _versions()
     prev_of = {v: vers[i - 1] for i, v in enumerate(vers) if i}
-    allf = [(rel, read_bytes(rel)) for rel in files()]
+    allf = [(rel, read_bytes(rel)) for rel in files()
+            if not (rel.replace(os.sep, "/").startswith("studio/") and rel.replace(os.sep, "/").split("/")[1] not in vers)]
     trimmed = {}
     for rel, data in allf:                                    # first pass: every preset file of every version
         parts = rel.replace(os.sep, "/").split("/")
