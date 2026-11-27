@@ -14,6 +14,9 @@ pause); none of it is print-tested.
 - Every slot a part uses is purged on a change. With `purge = "auto"` the builder uses Studio's color-based volumes (the same formula as
   Auto-Calc, checked against a real save). `purge = "default"` uses 140 + 140 mm3 for every pair, which wastes more but never underpurges.
   The build summary prints the grams per change so the user can see the cost before slicing.
+- To set one change by hand, give `purge` a table: `purge = { "1>2" = 450 }` (mm3, from slot > to slot). Other pairs stay at the auto values.
+  Use it when a dark-to-light change shows the old color on the print. Raise that pair only. The limit is 900 mm3 on Studio 2.8.2 and 2.9.1,
+  and 2000 mm3 on 2.9.2. See `examples/purge_matrix.toml`.
 - The prime tower is on whenever more than one slot is used. The builder places it and reserves a conservative footprint (R37), so a part
   that would sit on it is refused with a message that says which object to move. The tower size grows with the number of colors and the
   tower width setting; `prime_tower_width` in `settings` changes it.

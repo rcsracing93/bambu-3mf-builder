@@ -681,6 +681,64 @@ Plates
     height 17-20 mm: layer 0.08 mm, wall_loops 4
 ```
 
+## purge_matrix
+
+Two colors with a hand-set purge matrix: 1200 mm3 from slot 1 to slot 2 (above 900, so Studio 2.9.2) and 300 mm3 back.
+
+Job (`examples/purge_matrix.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "purge_matrix.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+# Hand-set purge volumes in mm3, from slot > to slot. Other pairs keep Studio's color-based values.
+# 1200 mm3 is above 900, so this job needs Studio 2.9.2.
+purge = { "1>2" = 1200, "2>1" = 300 }
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+
+[[object]]
+name = "Multi"
+[[object.part]]
+name = "Part 1"
+mesh = "data/slab1.stl"
+filament = 1
+[[object.part]]
+name = "Part 2"
+mesh = "data/slab2.stl"
+filament = 2
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #111111  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+  2  #FFFFFF  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Multi x1, 20 x 20 x 4.8 mm; Part 1 (filament 1), Part 2 (filament 2)
+
+Purge per color change, grams (from filament in the row to filament in the column; approximate)
+             1       2
+    1        -    1.51
+    2     0.38       -
+  Wipe tower: x 165, y 220.697 (plate 1)
+  Largest single purge 1.51 g. Mode: manual
+```
+
 ## temperature_tower
 
 Temperature changes every 4 mm, 230 C down to 215 C.

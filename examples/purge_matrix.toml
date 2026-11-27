@@ -1,0 +1,27 @@
+studio  = "2.9.2"
+output  = "purge_matrix.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+# Hand-set purge volumes in mm3, from slot > to slot. Other pairs keep Studio's color-based values.
+# 1200 mm3 is above 900, so this job needs Studio 2.9.2.
+purge = { "1>2" = 1200, "2>1" = 300 }
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+
+[[object]]
+name = "Multi"
+[[object.part]]
+name = "Part 1"
+mesh = "data/slab1.stl"
+filament = 1
+[[object.part]]
+name = "Part 2"
+mesh = "data/slab2.stl"
+filament = 2
