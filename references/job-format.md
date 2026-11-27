@@ -186,6 +186,10 @@ Use Studio's own setting names (`wall_loops`, `sparse_infill_density`, `outer_wa
 
 Per-object overrides of per-extruder (variant) print keys are not supported in v1.
 
+`seam_headroom` (Studio's `seam_embedded_headroom`, mm, 0 to 100) needs Studio 2.9.2 or newer. It is an object setting: use it in `[settings]`
+or `[object.settings]`. The builder refuses it on a part and in a height range. Without it, the preset value applies (10 for the P1S
+presets). See [multicolor.md](multicolor.md).
+
 ## Defaults that differ from Bambu's presets
 
 One: sparse infill is **Rectilinear**, not Grid. Grid crosses itself on every layer, so the nozzle drags over infill it just printed.
@@ -207,6 +211,7 @@ Settings can be written under a second spelling. It is only a name: the job is b
 | `bottom_layers` | `bottom_shell_layers` | process |
 | `supports` | `enable_support` | process |
 | `brim_size` | `brim_width` | process |
+| `seam_headroom` | `seam_embedded_headroom` | process |
 | `nozzle_temp` | `nozzle_temperature` | filament |
 | `nozzle_temp_first_layer` | `nozzle_temperature_initial_layer` | filament |
 | `flow` | `filament_flow_ratio` | filament |

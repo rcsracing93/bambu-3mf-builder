@@ -20,6 +20,10 @@ KINDS = ("machine", "process", "filament")
 RANGE_EXCLUDED = {"cross_part_color_penetration"}
 # Studio 2.9.2 Tab.cpp TabPrintPart::toggle_options: shown only when every selected volume is a model part (not a modifier).
 MODEL_PART_ONLY = {"cross_part_color_penetration"}
+# Studio 2.9.2 PrintConfig.hpp (PrintObjectConfig, not PrintRegionConfig): Studio reads these per object. A part or a height range cannot set them.
+OBJECT_ONLY = {"seam_embedded_headroom"}
+# Studio 2.9.2 PrintConfig.cpp adds seam_embedded_headroom; 2.8.2 and 2.9.1 have no such option (their options.json lacks it).
+MIN_STUDIO = {"seam_embedded_headroom": "2.9.2"}
 META_KEYS = {"type", "name", "inherits", "include", "from", "instantiation", "setting_id",
              "filament_id", "description", "version", "alias", "renamed_from"}
 

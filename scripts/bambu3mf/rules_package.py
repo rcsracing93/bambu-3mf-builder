@@ -8,6 +8,7 @@ from array import array
 
 from . import modes, rules_config, wipetower
 from . import validate as V
+from .profiles import OBJECT_ONLY
 from .validate import NS, P_UUID, P_PATH, _floats, bed_rect, colum_count, LOGICAL_PLATE_GAP, MAX_TOTAL, instances
 
 
@@ -392,6 +393,8 @@ def check(pkg, rep, cfg, ps, n):
                 if k in RESERVED_PART_KEYS:
                     continue
                 _override(k, v, ps, pw, rep, "R28")
+                if k in OBJECT_ONLY:
+                    rep.warn("R28", pw, "%s is an object setting (Studio PrintObjectConfig); Studio reads it per object, so this part override has no effect" % k)
         if o["parts"] and normal == 0:
             rep.err("R29", where, "the object has modifier, negative or support parts but no normal part to act on")
     # ---- R30 plates
