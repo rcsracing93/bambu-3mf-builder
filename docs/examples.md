@@ -795,6 +795,48 @@ Purge per color change, grams (from filament in the row to filament in the colum
   Largest single purge 1.51 g. Mode: manual
 ```
 
+## effect_plate
+
+The 3D Effect Plate (Studio 2.9.2 or newer) with a bed temperature of 60 C instead of the preset's 55 C.
+
+Job (`examples/effect_plate.toml`):
+
+```toml
+studio     = "2.9.2"
+output     = "effect_plate.3mf"
+printer    = "Bambu Lab P1S 0.4 nozzle"
+process    = "0.20mm Standard @BBL X1C"
+plate_type = "3D Effect Plate"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#2E6FC1"
+
+[filament.settings]
+bed_temp = 60
+bed_temp_first_layer = 60
+
+[[object]]
+name = "Cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: 3D Effect Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #2E6FC1  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Cube x1, 20 x 20 x 20 mm; Part 1 (filament 1)
+```
+
 ## temperature_tower
 
 Temperature changes every 4 mm, 230 C down to 215 C.

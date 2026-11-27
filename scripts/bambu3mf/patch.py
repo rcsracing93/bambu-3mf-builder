@@ -9,7 +9,7 @@ import os
 import tempfile
 
 from . import patch_cfg, patch_printer, patch_slots, patch_verify, patch_xml, patch_zip
-from .job import _Check, _settings_table
+from .job import PLATE_KEY, _Check, _settings_table
 from .package import _value, gs
 from .patch_job import PatchRefused
 from .patch_read import dump_config, open_source
@@ -39,6 +39,13 @@ def _same_file(a, b):
     return os.path.realpath(a) == os.path.realpath(b)
 
 
+def _bad_plate(pt, ps):
+    names = ", ".join(sorted(ps.bed_types))
+    if pt in PLATE_KEY:                      # a plate of a newer Studio (3D Effect Plate needs 2.9.2)
+        return "%s needs Studio 2.9.2 or newer; this file is from Studio %s. Choose one of: %s" % (pt, ps.version, names)
+    return "%r is not a plate type. Choose one of: %s" % (pt, names)
+
+
 # ---- the request, checked against the file -----------------------------------------------------------------------
 def build_request(job, src, ps):
     """Coerce setting values and check every slot, object, plate and layer of the job against the file. Returns
@@ -49,7 +56,7 @@ def build_request(job, src, ps):
     req.process, req.keep_process, req.reset = job.process, job.keep_changes, job.reset
     if job.plate_type is not None:
         if job.plate_type not in ps.bed_types:
-            chk.err("plate_type", "%r is not a plate type. Choose one of: %s" % (job.plate_type, ", ".join(sorted(ps.bed_types))))
+            chk.err("plate_type", _bad_plate(job.plate_type, ps))
         else:
             req.plate_type = job.plate_type
     ptype = req.plate_type or src.cfg.get("curr_bed_type")
@@ -190,7 +197,7 @@ def build_request(job, src, ps):
         if pj["id"] > nplates:
             chk.err(pj["where"] + ".id", "the file has %d plate(s)" % nplates)
         elif pj["plate_type"] not in ps.bed_types:
-            chk.err(pj["where"] + ".plate_type", "%r is not a plate type. Choose one of: %s" % (pj["plate_type"], ", ".join(sorted(ps.bed_types))))
+            chk.err(pj["where"] + ".plate_type", _bad_plate(pj["plate_type"], ps))
         else:
             plate_types[pj["id"]] = pj["plate_type"]
             add(("plate", int(ms["plates"][pj["id"] - 1]["meta"].get("plater_id", pj["id"]))), "bed_type", pj["plate_type"])

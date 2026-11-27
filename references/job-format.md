@@ -238,6 +238,16 @@ Many more names work: every print and filament setting can also be written as th
 
 Any other unknown name fails with the three closest real names.
 
+## 3D Effect Plate
+
+`plate_type = "3D Effect Plate"` needs Studio 2.9.2 or newer. A job for an older Studio is refused with a message that says so. Set `studio = "2.9.2"`.
+
+- The bed temperature keys are `effect_plate_temp` and `effect_plate_temp_initial_layer` (whole degrees, 0 to 120). A filament with 0 does not support the plate, and the builder refuses it.
+- With this plate type, `bed_temp` and `bed_temp_first_layer` set those two keys. You can also write the keys under `[filament.settings]`. Either way the value is a changed setting in the file.
+- Patch mode: `plate_type = "3D Effect Plate"` (top level or in a `[[plate]]`) works on a file from Studio 2.9.2. It is refused on a file from 2.8.2 or 2.9.1. The 0 check for the used filaments applies as for the other plates.
+
+See `examples/effect_plate.toml`.
+
 ## Lint
 
 After the config is built, the builder checks the settings against fields of the Studio presets and prints a warning for each finding. Lint warnings start with `lint:`, appear in the console summary and in the summary file, and never stop a build. Every rule uses a Studio field; a check without a field is not a rule.

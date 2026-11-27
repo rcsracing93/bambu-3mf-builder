@@ -1,0 +1,19 @@
+studio     = "2.9.2"
+output     = "effect_plate.3mf"
+printer    = "Bambu Lab P1S 0.4 nozzle"
+process    = "0.20mm Standard @BBL X1C"
+plate_type = "3D Effect Plate"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#2E6FC1"
+
+[filament.settings]
+bed_temp = 60
+bed_temp_first_layer = 60
+
+[[object]]
+name = "Cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
