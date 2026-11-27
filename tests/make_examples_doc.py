@@ -21,12 +21,13 @@ ABOUT = {
     "pause": "A pause at 10 mm (for example to insert a magnet).",
     "per_object_settings": "Two copies of one mesh with different walls and infill.",
     "height_ranges": "Height ranges: 0.12 mm layers for the bottom 2 mm, 0.08 mm layers and 4 walls for the top 3 mm, 0.2 mm in between.",
+    "effect_plate": "The 3D Effect Plate (Studio 2.9.2 or newer) with a bed temperature of 60 C instead of the preset's 55 C.",
     "temperature_tower": "Temperature changes every 4 mm, 230 C down to 215 C.",
     "calibration_tower": "A ready-made calibration temperature tower, no mesh needed: five 8 mm bands from 230 C (preset 220 C + 10) down to 210 C, "
                          "each with its temperature cut into the front, a 45 and a 30 degree overhang, a 10 mm bridge and two stringing pins.",
 }
 ORDER = ["single_p1s", "single_p1p", "single_a1", "single_x1c", "colors_2", "colors_4", "colors_8", "modifier_negative",
-         "multi_plate", "pause", "per_object_settings", "height_ranges", "temperature_tower", "calibration_tower"]
+         "multi_plate", "pause", "per_object_settings", "height_ranges", "temperature_tower", "calibration_tower", "effect_plate"]
 
 
 def render():
