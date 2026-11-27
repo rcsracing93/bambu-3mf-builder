@@ -1,0 +1,27 @@
+studio  = "2.9.2"
+output  = "seam_headroom.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+# The P1S process presets set seam_headroom to 10 mm. This job asks for 20 mm.
+[settings]
+seam_headroom = 20
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+
+[[object]]
+name = "Inlay"
+[[object.part]]
+name = "Part 1"
+mesh = "data/slab1.stl"
+filament = 1
+[[object.part]]
+name = "Part 2"
+mesh = "data/slab2.stl"
+filament = 2

@@ -20,6 +20,21 @@ KINDS = ("machine", "process", "filament")
 RANGE_EXCLUDED = {"cross_part_color_penetration"}
 # Studio 2.9.2 Tab.cpp TabPrintPart::toggle_options: shown only when every selected volume is a model part (not a modifier).
 MODEL_PART_ONLY = {"cross_part_color_penetration"}
+# Studio 2.9.2 PrintConfig.hpp (PrintObjectConfig, not PrintRegionConfig): Studio reads these per object. A part or a height range cannot set them.
+OBJECT_ONLY = {"seam_embedded_headroom"}
+_KEYS_OF = {}
+
+
+def min_studio(key, root=None):
+    """The lowest supported Studio version ("2.9.2") whose option table has this key, or None. A job for an older version that
+    sets the key gets "needs Studio X or newer" (for example seam_embedded_headroom and cross_part_color_penetration, new in 2.9.2)."""
+    for v in STUDIO_VERSIONS:
+        if v not in _KEYS_OF:
+            with open(os.path.join(root or studio_root(), v, "options.json")) as f:
+                _KEYS_OF[v] = {o["key"] for o in json.load(f)["options"]}
+        if key in _KEYS_OF[v]:
+            return ".".join(v.split(".")[:3])
+    return None
 META_KEYS = {"type", "name", "inherits", "include", "from", "instantiation", "setting_id",
              "filament_id", "description", "version", "alias", "renamed_from"}
 

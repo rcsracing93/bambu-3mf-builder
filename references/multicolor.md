@@ -34,6 +34,19 @@ boundary and does not run into the other part. This follows Studio's tooltip. It
 `examples/inlay_no_penetration.toml` shows it. A job for Studio 2.8.2 or 2.9.1 gets an error: the setting needs Studio 2.9.2 or newer.
 It is not allowed on a modifier part or in a height range.
 
+## Seam headroom (Studio 2.9.2 and newer)
+
+`seam_headroom` is the job name for Studio's `seam_embedded_headroom` (label "Embedded seam headroom", 0 to 100 mm, default 0; the P1S
+process presets set 10). Studio's tooltip says: when a seam can be hidden inside the print, for example at the joint of two materials,
+prefer the seam position that leaves at least this much hidden wall in the printing direction before the wall becomes visible. This hides
+extrusion defects from unstable nozzle pressure after a filament change. 0 turns it off.
+
+- In Studio's seam code (`SeamPlacer.cpp`) it applies only on layers where more than one region has walls, which is the case for
+  parts of different colors that touch. A single-color object is not affected.
+- Set it as an object setting, in `[settings]` or `[object.settings]`. Studio reads it per object. A part or a height range cannot set it.
+- A job for Studio 2.8.2 or 2.9.1 that sets it is refused. Those versions have no such setting.
+- This was checked in the slicer source and in a headless slice. It is not print-tested.
+
 ## No AMS (single spool, change by hand)
 
 Use `[[layer_gcode]]` with `pause = true` at the layer where the user swaps the filament, and set the next color in the printer's own change

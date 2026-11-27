@@ -531,6 +531,64 @@ Purge per color change, grams (from filament in the row to filament in the colum
   Largest single purge 0.75 g. Mode: auto
 ```
 
+## seam_headroom
+
+Two colors with the embedded seam headroom set to 20 mm (the P1S presets use 10 mm). Needs Studio 2.9.2.
+
+Job (`examples/seam_headroom.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "seam_headroom.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+# The P1S process presets set seam_headroom to 10 mm. This job asks for 20 mm.
+[settings]
+seam_headroom = 20
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+
+[[object]]
+name = "Inlay"
+[[object.part]]
+name = "Part 1"
+mesh = "data/slab1.stl"
+filament = 1
+[[object.part]]
+name = "Part 2"
+mesh = "data/slab2.stl"
+filament = 2
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #111111  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+  2  #FFFFFF  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Inlay x1, 20 x 20 x 4.8 mm; Part 1 (filament 1), Part 2 (filament 2)
+
+Purge per color change, grams (from filament in the row to filament in the column; approximate)
+             1       2
+    1        -    0.75
+    2     0.17       -
+  Wipe tower: x 165, y 220.697 (plate 1)
+  Largest single purge 0.75 g. Mode: auto
+```
+
 ## multi_plate
 
 Two objects on two plates.

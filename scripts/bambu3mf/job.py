@@ -7,7 +7,11 @@ import difflib
 import json
 import os
 
-from .profiles import ProfileError, ProfileSet, STUDIO_VERSIONS, MODEL_PART_ONLY
+from .profiles import ProfileError, ProfileSet, STUDIO_VERSIONS, MODEL_PART_ONLY, OBJECT_ONLY, min_studio
+
+
+def _vt3(v):
+    return tuple(int(x) for x in str(v).split(".")[:3])
 from .serialize import normalize
 from . import studio_detect
 from . import calibration
@@ -137,8 +141,9 @@ def coerce(option, value, where, chk):
 # option labels by tests/gen_aliases.py, listed in references/aliases.md). Any other unknown name gets the closest real names.
 PRINT_ALIASES = {"walls": "wall_loops", "infill": "sparse_infill_density", "infill_pattern": "sparse_infill_pattern",
                  "top_layers": "top_shell_layers", "bottom_layers": "bottom_shell_layers", "supports": "enable_support",
-                 "brim_size": "brim_width", "color_penetration_cross_parts": "cross_part_color_penetration"}
-NEEDS_STUDIO_292 = {"color_penetration_cross_parts", "cross_part_color_penetration"}     # settings that exist from Studio 2.9.2 on
+                 "brim_size": "brim_width",
+                 # Studio 2.9.2 and newer (a job for an older version gets "needs Studio 2.9.2 or newer", from profiles.min_studio)
+                 "color_penetration_cross_parts": "cross_part_color_penetration", "seam_headroom": "seam_embedded_headroom"}
 FILAMENT_ALIASES = {"nozzle_temp": "nozzle_temperature", "nozzle_temp_first_layer": "nozzle_temperature_initial_layer",
                     "flow": "filament_flow_ratio"}
 PLATE_KEY = {"Cool Plate": "cool_plate_temp", "Engineering Plate": "eng_plate_temp", "High Temp Plate": "hot_plate_temp",
@@ -197,6 +202,9 @@ def _height_ranges(raw, by, ver, w, chk, ps, nfil):
         if "layer_height" in st:
             chk.err(rw + ".settings.layer_height", "set layer_height on the range itself, not in its settings")
             st.pop("layer_height")
+        for k in sorted(OBJECT_ONLY & set(st)):
+            chk.err(rw + ".settings." + k, "%s is an object setting: Studio reads it per object, not per height range. Set it in [object.settings] or [settings]" % k)
+            st.pop(k)
         bad = sorted(k for k in st if region and k not in region)
         if bad:
             chk.err(rw + ".settings", "%s cannot be set in a height range. A range takes layer_height and the settings a part can have "
@@ -253,8 +261,10 @@ def _settings_table(tbl, owners, by, ver, where, chk, label, plate_type=None):
         if opt is None:
             near = _closest(key, by.keys())
             other = None
-            if key in NEEDS_STUDIO_292:
-                chk.err(w, "%s needs Studio 2.9.2 or newer. Studio %s has no setting %r. Set studio = \"2.9.2\" in the job, or remove it." % (key, ver, "cross_part_color_penetration"))
+            need = min_studio(key)
+            if need and _vt3(need) > _vt3(ver):          # the setting exists in a newer supported Studio
+                chk.err(w, "%s needs Studio %s or newer. Studio %s has no setting %r. Set studio = \"%s\" in the job, or remove it." % (
+                    w.rsplit(".", 1)[-1], need, ver, key, need))
                 continue
             chk.err(w, "Studio %s has no setting %r.%s" % (ver, key, (" Closest: " + ", ".join(near)) if near else ""))
             continue
@@ -636,6 +646,9 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
                 pe["mesh"] = full
             pe["settings"] = _settings_table(p.get("settings", {}), ("print",), by, ver, pw + ".settings", chk,
                                              "[object.part.settings] (process settings only)")
+            for k in sorted(OBJECT_ONLY & set(pe["settings"])):
+                chk.err("%s.settings.%s" % (pw, k), "%s is an object setting: Studio reads it per object, not per part. Set it in [object.settings] or [settings]" % k)
+                pe["settings"].pop(k)
             if pe["type"] != "normal_part":
                 for k in sorted(MODEL_PART_ONLY & set(pe["settings"])):
                     chk.err("%s.settings.%s" % (pw, k), "%s applies to a normal part only, not to a %s (Studio hides it for modifiers)" % (k, pe["type"]))
