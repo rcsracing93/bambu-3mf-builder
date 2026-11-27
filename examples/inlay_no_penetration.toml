@@ -5,12 +5,13 @@ process = "0.20mm Standard @BBL X1C"
 
 [[filament]]
 preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
-color = "#111111"
+color = "#F2F2F2"
 
 [[filament]]
 preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
-color = "#FFFFFF"
+color = "#C12E1F"
 
+# Acts only on color painted in Studio. These parts are not painted, so the tool paths are the same with it on or off.
 [[object]]
 name = "Body and inlay"
 [object.settings]

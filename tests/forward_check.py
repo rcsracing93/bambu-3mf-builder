@@ -103,13 +103,73 @@ def tool_loads(gcode):
     return out
 
 
-def content_checks(name, jobfile, gcodes):
+def _num(v):
+    return ("%d" % v) if float(v) == int(v) else ("%g" % v)
+
+
+def checks_292(raw, f3mf, gcodes):
+    """1.3.0 phase 3 functions, from the job file: seam_headroom (project config and G-code), color_penetration_cross_parts on an
+    object (object config), a manual purge table (project config and G-code), the plate type and its bed temperatures (G-code)."""
+    out = []
+    z = zipfile.ZipFile(f3mf)
+    cfg = json.loads(z.read("Metadata/project_settings.config"))
+    blk = harness.config_block(gcodes[0]) if gcodes else {}
+    st = raw.get("settings") or {}
+    for k in ("seam_headroom", "seam_embedded_headroom"):
+        if k in st:
+            want = _num(st[k])
+            out.append(("seam_headroom", cfg.get("seam_embedded_headroom") == want and str(blk.get("seam_embedded_headroom")) == want,
+                        "%s = %s: project config %s, G-code %s" % (k, want, cfg.get("seam_embedded_headroom"), blk.get("seam_embedded_headroom"))))
+    ms = z.read("Metadata/model_settings.config").decode("utf-8")
+    for i, o in enumerate(raw.get("object") or [], 1):
+        os_ = o.get("settings") or {}
+        for k in ("color_penetration_cross_parts", "cross_part_color_penetration"):
+            if k in os_:
+                want = "1" if os_[k] else "0"
+                objs = re.findall(r"<object id=\"\d+\">(.*?)</object>", ms, re.S)
+                got = re.findall(r'<metadata key="cross_part_color_penetration" value="([^"]*)"/>', objs[i - 1].split("<part")[0]) if len(objs) >= i else []
+                out.append(("color penetration", got == [want], "object %d %s = %s: object config %s" % (i, k, want, got or "missing")))
+    if isinstance(raw.get("purge"), dict):
+        m = cfg.get("flush_volumes_matrix") or []
+        n = len(raw.get("filament") or [])
+        g = str(blk.get("flush_volumes_matrix", "")).split(",")
+        for key, v in sorted(raw["purge"].items()):
+            a, b = (int(x) - 1 for x in key.split(">"))
+            want = _num(v)
+            cell = m[a * n + b] if len(m) == n * n else None
+            gcell = g[a * n + b].strip() if len(g) == n * n else None
+            out.append(("purge %s" % key, cell == want and gcell is not None and float(gcell) == float(want),
+                        "%s mm3: project config %s, G-code %s" % (want, cell, gcell)))
+    pt = raw.get("plate_type")
+    if pt:
+        out.append(("plate type", blk.get("curr_bed_type") == pt, "G-code curr_bed_type %s, want %s" % (blk.get("curr_bed_type"), pt)))
+        fs = ((raw.get("filament") or [{}])[0].get("settings") or {})
+        if "bed_temp_first_layer" in fs and gcodes:
+            want = int(fs["bed_temp_first_layer"])
+            m140 = m190 = None
+            with open(gcodes[0], encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if m140 is None and line.startswith("M140 S"):
+                        m140 = int(float(line.split()[1][1:]))
+                    if m190 is None and line.startswith("M190 S"):
+                        m190 = int(float(line.split()[1][1:]))
+                    if m140 is not None and m190 is not None:
+                        break
+            out.append(("bed temperature", m140 == want and m190 == want, "first M140 S%s, first M190 S%s, want %d" % (m140, m190, want)))
+        if "bed_temp" in fs:
+            key = {"3D Effect Plate": "effect_plate_temp"}.get(pt)
+            if key:
+                out.append(("bed temperature key", str(blk.get(key)) == str(fs["bed_temp"]), "G-code %s = %s, want %s" % (key, blk.get(key), fs["bed_temp"])))
+    return out
+
+
+def content_checks(name, jobfile, gcodes, f3mf=None):
     """[(check name, ok, detail)] from the job file. An expectation that cannot be made from the job is a FAIL, never a skip."""
     with open(jobfile, "rb") as fh:
         raw = tomllib.load(fh)
     root = os.path.dirname(os.path.abspath(jobfile))
     by_plate = {int(re.search(r"plate_(\d+)\.gcode$", g).group(1)): g for g in gcodes}
-    out = []
+    out = checks_292(raw, f3mf, gcodes) if f3mf else []
     tw = raw.get("temperature_tower")
     if tw and tw.get("shape") != "calibration":
         want = [(tw["first_z"] + i * tw["step_height"], tw["start"] + i * tw["step"]) for i in range(int(tw["steps"]))]
@@ -192,7 +252,7 @@ def main(argv):
             fs = fresh_slice(exe, out, os.path.join(tmp, name + ".slice")) if os.path.exists(out) else {"problems": ["no 3MF"], "wall": 0.0, "gcodes": [], "result": None}
             probs += fs["problems"]
             sha, size = sha_size(fs["gcodes"]) if fs["gcodes"] else ("-", 0)
-            cc = content_checks(name, j, fs["gcodes"]) if fs["gcodes"] else []
+            cc = content_checks(name, j, fs["gcodes"], out) if fs["gcodes"] else []
             probs += ["%s: %s" % (c, d) for c, ok, d in cc if not ok]
             plates = []
             for g in fs["gcodes"]:

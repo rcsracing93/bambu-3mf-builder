@@ -477,7 +477,7 @@ Plates
 
 ## inlay_no_penetration
 
-Studio 2.9.2: a body part and an inlay part, with color penetration kept inside each part (`color_penetration_cross_parts = false`).
+Studio 2.9.2: a body part and an inlay part with `color_penetration_cross_parts = false` on the object. The setting acts only on painted color, so these unpainted parts slice the same with it on or off (see references/multicolor.md).
 
 Job (`examples/inlay_no_penetration.toml`):
 
@@ -489,12 +489,13 @@ process = "0.20mm Standard @BBL X1C"
 
 [[filament]]
 preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
-color = "#111111"
+color = "#F2F2F2"
 
 [[filament]]
 preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
-color = "#FFFFFF"
+color = "#C12E1F"
 
+# Acts only on color painted in Studio. These parts are not painted, so the tool paths are the same with it on or off.
 [[object]]
 name = "Body and inlay"
 [object.settings]
@@ -517,18 +518,18 @@ Builder summary:
   Walls 2, infill 15% rectilinear, layer 0.2 mm
 
 Filaments
-  1  #111111  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
-  2  #FFFFFF  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+  1  #F2F2F2  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+  2  #C12E1F  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
 
 Plates
   plate 1: Body and inlay x1, 20 x 20 x 4.8 mm; Body (filament 1), Inlay (filament 2)
 
 Purge per color change, grams (from filament in the row to filament in the column; approximate)
              1       2
-    1        -    0.75
-    2     0.17       -
+    1        -    0.30
+    2     0.69       -
   Wipe tower: x 165, y 220.697 (plate 1)
-  Largest single purge 0.75 g. Mode: auto
+  Largest single purge 0.69 g. Mode: auto
 ```
 
 ## seam_headroom

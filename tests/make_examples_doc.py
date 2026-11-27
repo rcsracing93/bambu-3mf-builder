@@ -17,7 +17,7 @@ ABOUT = {
     "colors_4": "Four colors, one part per color.",
     "colors_8": "Eight colors: eight parts, eight filament slots.",
     "modifier_negative": "A modifier part (80% infill in the lower half) and a negative part (a hole) on one body.",
-    "inlay_no_penetration": "Studio 2.9.2: a body part and an inlay part, with color penetration kept inside each part (`color_penetration_cross_parts = false`).",
+    "inlay_no_penetration": "Studio 2.9.2: a body part and an inlay part with `color_penetration_cross_parts = false` on the object. The setting acts only on painted color, so these unpainted parts slice the same with it on or off (see references/multicolor.md).",
     "multi_plate": "Two objects on two plates.",
     "pause": "A pause at 10 mm (for example to insert a magnet).",
     "per_object_settings": "Two copies of one mesh with different walls and infill.",
