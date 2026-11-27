@@ -41,12 +41,30 @@ look at the preview, and slice it yourself.
 
 ## Install
 
+Read this first:
+
+- This skill is not in Anthropic's plugin directory. A search in Claude finds nothing.
+- The marketplace commands work only in Claude Code (terminal or IDE). They do not work in the Claude app.
+- In the Claude app (web, desktop, mobile), upload the skill zip (way 2 below).
+- Tested with Claude Code 2.1.332. If `/plugin` is unknown, update Claude Code.
+
 Three ways. Pick one.
 
 **1. Claude Code**
 
-1. In Claude Code, run `/plugin marketplace add rcsracing93/bambu-3mf-builder`.
+Inside a Claude Code session:
+
+1. Run `/plugin marketplace add rcsracing93/bambu-3mf-builder`.
 2. Then run `/plugin install bambu-3mf-builder@bambu-3mf-builder`.
+
+Or from a terminal:
+
+```
+claude plugin marketplace add rcsracing93/bambu-3mf-builder
+claude plugin install bambu-3mf-builder@bambu-3mf-builder
+```
+
+`claude plugin details bambu-3mf-builder` then lists the skill.
 
 **2. Claude app (web, desktop, mobile)**
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0 (unreleased)
+
+### A new Studio release never stops a build
+- With `studio = "auto"` and a Studio newer than the newest supported version, the file is built for the newest supported version with a
+  warning. Studio opens an older 2.x project with all settings. A newer major version gets a stronger warning and an automatic slice check.
+  `strict_version = true` or `--strict-version` keeps the old stop.
+- Patch mode and the validator accept files from a newer 2.x, with warnings for settings they do not know.
+
+### Bambu Studio 2.9.2
+- Supported versions: 2.8.2.61, 2.9.1.70 and 2.9.2.62. Files built for 2.8.2 and 2.9.1 are the same as in 1.2.0.
+- 2.9.2 rules: nozzle temperature minimum 165 °C, the 3D Effect Plate, the Engineering Plate for Bambu PLA Basic, Matte and Silk+.
+
+### Install
+- The README now says: the skill is not in Anthropic's plugin directory, so a search in Claude finds nothing. The marketplace commands
+  work only in Claude Code (`/plugin ...` in a session, or `claude plugin ...` in a terminal). In the Claude app, upload the skill zip.
+
 ## 1.2.0 (2026-11-21)
 
 ### Height ranges (variable layer height)
