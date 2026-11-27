@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build a Bambu Studio project 3MF from a job file.
-Usage: build_bambu_3mf.py job.toml [--out file.3mf] [--slice-check [--studio-path PATH]] [--no-summary] [--user-presets DIR]
+Usage: build_bambu_3mf.py job.toml [--out file.3mf] [--slice-check [--studio-path PATH]] [--no-summary] [--user-presets DIR] [--strict-version]
        build_bambu_3mf.py --list printer|process|filament [--studio 2.9.1] [--printer "Bambu Lab P1S 0.4 nozzle"] [--match text]
 --slice-check slices the built file in your installed Bambu Studio and says whether it worked. The program is found in the usual
 install places; --studio-path (a program, an app or an install folder) or the BAMBU_STUDIO_PATH variable override that.
@@ -9,6 +9,9 @@ grams). --no-summary turns it off.
 A job may name one of your own Studio presets (process or filament) in place of a system preset. It is read at run time from
 your Studio data folder, or from --user-presets DIR (or the BAMBU_STUDIO_USER_DIR variable): the data folder, its user folder
 or one id folder. Only the file of the preset the job names is read. The preset needs a parent (made from a system preset).
+With studio = "auto" and an installed Studio newer than the newest supported version, the file is built for the newest supported
+version with a warning (a newer major version also runs the slice check by itself). --strict-version (or strict_version = true in the
+job) stops instead.
 A job with patch = "file.3mf" changes an existing Studio project and writes a new file (see references/job-format.md, Patch mode).
 --list prints selectable Studio preset names, one per line. process and filament need --printer to show only the ones made for it."""
 import os
@@ -101,6 +104,8 @@ def main(argv):
     argv = [a for a in argv if a != "--slice-check"]
     write_md = "--no-summary" not in argv
     argv = [a for a in argv if a != "--no-summary"]
+    strict_version = "--strict-version" in argv
+    argv = [a for a in argv if a != "--strict-version"]
     studio_path = None
     if "--studio-path" in argv:
         i = argv.index("--studio-path")
@@ -131,7 +136,7 @@ def main(argv):
     if patch_job.is_patch_job(argv[0]):
         return main_patch(argv[0], out, do_check, studio_path, write_md)
     try:
-        job = load_job(argv[0], user_presets=user_presets)
+        job = load_job(argv[0], user_presets=user_presets, strict_version=strict_version)
         s = package.build(job, out)
     except JobError as e:
         print("The job cannot be built:", file=sys.stderr)
@@ -144,9 +149,18 @@ def main(argv):
     if getattr(job, "studio_note", None):
         print("note: " + job.studio_note)
     print(summary.format_summary(job, s), end="")
-    if do_check or studio_path:
+    auto_check = getattr(job, "auto_slice_check", False) and not (do_check or studio_path)
+    if do_check or studio_path or auto_check:
         from bambu3mf import studio_detect
         exe, how = studio_detect.find_cli(studio_path)
+        if not exe and auto_check:
+            # newer major Studio: the slice check runs only when the program is found; a missing program is not an error
+            print("slice check: not run (%s)" % how)
+            if write_md:
+                summary.write_summary_file(job, s)
+            return 0
+        if auto_check:
+            print("slice check: run automatically, because the installed Studio is a newer major version")
         if not exe:
             if write_md:
                 summary.write_summary_file(job, s)

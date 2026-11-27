@@ -11,6 +11,7 @@ from .profiles import ProfileError, ProfileSet, STUDIO_VERSIONS
 from .serialize import normalize
 from . import studio_detect
 from . import calibration
+from . import versions
 
 try:
     import tomllib
@@ -19,7 +20,7 @@ except ImportError:                      # Python 3.8-3.10: vendored tomli 2.0.1
 
 STUDIO_ALIASES = {"2.8.2": "2.8.2.61", "2.8.2.61": "2.8.2.61", "2.9.1": "2.9.1.70", "2.9.1.70": "2.9.1.70"}
 TOP_KEYS = {"studio", "output", "title", "printer", "process", "plate_type", "settings", "filament", "object",
-            "layer_gcode", "temperature_tower", "purge", "allow_large"}
+            "layer_gcode", "temperature_tower", "purge", "allow_large", "strict_version"}
 BAD_NAME_CHARS = '<>:/\\?*"|'          # Studio drops such names (validator rule R31)
 FILAMENT_KEYS = {"preset", "color", "settings"}
 OBJECT_KEYS = {"name", "plate", "position", "settings", "part", "copies", "height_range"}
@@ -371,7 +372,7 @@ def _user_warning(chk, where, name, meta, cfg, ps):
             len(meta["dropped"]), kind, ps.version))
 
 
-def load_job(path, root=None, user_presets=None):
+def load_job(path, root=None, user_presets=None, strict_version=False):
     chk = _Check()
     base = os.path.dirname(os.path.abspath(path))
     try:
@@ -392,20 +393,30 @@ def load_job(path, root=None, user_presets=None):
     # ---- studio version -------------------------------------------------------------------
     studio = str(raw.get("studio", "auto"))
     job.studio_note = None
+    job.studio_warning = None
+    job.auto_slice_check = False
+    sv = raw.get("strict_version", False)
+    if not isinstance(sv, bool):
+        raise JobError(["strict_version: must be true or false"])
+    job.strict_version = bool(strict_version or sv)
     if studio == "auto":
-        det = studio_detect.detect()
-        if det and det in STUDIO_VERSIONS:
-            ver = det
-        elif det:
-            raise JobError(["Installed Bambu Studio is %s. Supported: %s. Update or set studio = \"2.8.2\" or \"2.9.1\" in the job." % (
-                det, ", ".join(STUDIO_VERSIONS))])
-        else:
-            ver = STUDIO_VERSIONS[-1]
-            job.studio_note = "No Bambu Studio found on this computer; building for the newest supported version (%s)." % ver
+        requested = "auto"
     elif studio in STUDIO_ALIASES:
-        ver = STUDIO_ALIASES[studio]
+        requested = STUDIO_ALIASES[studio]
     else:
-        raise JobError(["studio = %r is not supported. Use \"2.8.2\", \"2.9.1\" or \"auto\"." % studio])
+        raise JobError(["studio = %r is not supported. Use %s or \"auto\"." % (
+            studio, ", ".join('"%s"' % k for k in sorted(STUDIO_ALIASES) if k.count(".") == 2))])
+    try:
+        choice = versions.choose(requested, studio_detect.detect() if requested == "auto" else None, STUDIO_VERSIONS, job.strict_version)
+    except versions.VersionError as e:
+        raise JobError([str(e)])
+    ver = choice.version
+    job.studio_note = choice.note
+    job.studio_warning = choice.warning
+    job.studio_mode = choice.mode
+    job.auto_slice_check = choice.auto_slice_check
+    if choice.warning:
+        chk.warn("studio", choice.warning)
     job.studio = ver
     try:
         ps = ProfileSet(ver, root)

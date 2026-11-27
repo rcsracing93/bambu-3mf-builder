@@ -4,6 +4,7 @@ import re
 
 from .profiles import ProfileSet, ProfileError, STUDIO_VERSIONS
 from . import config as cfgmod
+from . import versions
 
 
 def _digits(s):
@@ -36,20 +37,26 @@ def load_profiles(cfg, app, rep):
         return None
     v = version_key(cfg.get("version", ""))
     build_other = None
+    newer = False
     if v not in STUDIO_VERSIONS:
-        # the same major.minor.patch with another build (2.8.2.60): the tables of the supported build apply, with a warning
-        near = [sv for sv in STUDIO_VERSIONS if v is not None and sv.split(".")[:3] == v.split(".")[:3]]
-        if not near:
+        # the same major.minor.patch with another build (2.8.2.60), or a newer 2.x than the newest supported (2.9.3.x): the tables of
+        # the matching / newest supported build apply, with a warning; a key those tables do not know is a warning, not an error
+        tag, kind = versions.file_choice(v, STUDIO_VERSIONS)
+        if tag is None:
             rep.warn("R16", "project_settings version", "Studio version %r is not supported (supported: %s); the table rules were skipped" % (cfg.get("version"), ", ".join(STUDIO_VERSIONS)))
             return None
-        build_other, v = v, near[0]
+        build_other, v, newer = v, tag, kind == "newer"
     try:
         ps = ProfileSet(v)
     except ProfileError as e:
         rep.warn("R16", "profiles", str(e), cls="SKIPPED")
         return None
     ps.build_other = build_other
-    if build_other:
+    ps.newer_file = newer
+    if newer:
+        rep.warn("R16", "project_settings version", "Studio %s is newer than the newest supported version; the file is checked against the rules of %s (supported: %s). A key that %s does not know is a warning, not an error. A builder update may follow" % (
+            build_other, ps.tag_version, ", ".join(STUDIO_VERSIONS), ps.tag_version), cls="CHANGE")
+    elif build_other:
         rep.warn("R16", "project_settings version", "Studio build %s is not a supported build (supported: %s); the tables of %s are applied (the system presets of the other build can differ, and Studio resets unlisted values to its own), so a key that build does not know is a warning, not an error (%s)" % (
             build_other, ", ".join(STUDIO_VERSIONS), ps.tag_version, LOAD_EXTERNAL_PRESET), cls="CHANGE")
     stamp = str(cfg.get("version")) if build_other else ps.tag_version

@@ -94,11 +94,22 @@ def open_source(path):
     cfg_v = _vtuple(cfg["version"])
     if app_v is None or cfg_v is None or app_v[:3] != cfg_v[:3]:
         raise PatchRefused(["The file says it was saved by %s but its project settings are version %s. %s" % (s.app, cfg["version"], OPEN_IT)])
-    if app_v[:3] not in ACCEPT:
-        raise PatchRefused(["This file was saved by Bambu Studio %s. Patch mode accepts 2.8.2 and 2.9.1 only. %s" % (".".join(str(x) for x in app_v), OPEN_IT)])
     s.build = am.group(1)
-    s.tag = ACCEPT[app_v[:3]]
-    if s.build not in SUPPORTED_BUILDS:
+    s.newer = False
+    if app_v[:3] in ACCEPT:
+        s.tag = ACCEPT[app_v[:3]]
+    else:
+        newest = max(ACCEPT)
+        if app_v[0] == newest[0] and app_v[:3] > newest:
+            # 1.3.0 forward-compatible mode: a file from a newer 2.x is patched with the tables of the newest supported version
+            s.tag, s.newer = ACCEPT[newest], True
+            s.warnings.append("The file was saved by Studio %s, newer than the newest supported version. It is patched with the rules of %s. "
+                              "Settings that %s does not know are kept as they are and reported as warnings. A builder update may follow." % (
+                                  ".".join(str(x) for x in app_v), s.tag, s.tag))
+        else:
+            raise PatchRefused(["This file was saved by Bambu Studio %s. Patch mode accepts %s and newer 2.x. %s" % (
+                ".".join(str(x) for x in app_v), ", ".join("%d.%d.%d" % k for k in sorted(ACCEPT)), OPEN_IT)])
+    if s.build not in SUPPORTED_BUILDS and not s.newer:
         s.warnings.append("The file was saved by Studio build %s; the tables of build %s are used. Studio may treat a setting that the other build does not know differently." % (s.build, s.tag))
     nz = cfg.get("nozzle_diameter")
     if not isinstance(nz, list) or len(nz) != 1:

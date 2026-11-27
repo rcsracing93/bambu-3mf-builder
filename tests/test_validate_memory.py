@@ -64,7 +64,7 @@ import os, resource, sys
 sys.path.insert(0, %r)
 from bambu3mf import validate
 rep = validate._validate(sys.argv[1], False)
-print("RSS_KB", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+print("RSS_KB", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss // (1024 if sys.platform == "darwin" else 1))   # macOS gives bytes, Linux KiB
 print("RULES", sorted({f.rule for f in rep.findings if f.level == "error" or f.rule == "G6"}), [str(f)[:150] for f in rep.findings if f.level == "error"][:3])
 ''' % os.path.join(H, "..", "scripts")
 

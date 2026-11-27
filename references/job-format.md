@@ -7,7 +7,8 @@ problem with its key name, and builds nothing until the file is clean.
 
 | Key | Required | Meaning |
 |---|---|---|
-| `studio` | no | `"auto"` (default: the Studio installed on this computer, or the newest supported one if none is found), `"2.9.1"` or `"2.8.2"`. The full tag (`"2.9.1.70"`) also works. An installed Studio of another version is an error, so the file is never built for the wrong one. |
+| `studio` | no | `"auto"` (default: the Studio installed on this computer, or the newest supported one if none is found), `"2.9.1"` or `"2.8.2"`. The full tag (`"2.9.1.70"`) also works. A pinned version always builds for that version. With `"auto"` and a Studio that is newer than the newest supported version, the file is built for the newest supported version with a warning in the console and the summary file (Studio opens an older 2.x project with all its settings). A newer MAJOR version (3.x) gets a stronger warning, and `--slice-check` runs by itself when the Studio program is found. An installed Studio older than the oldest supported version is an error, unless the job pins a supported version. A Studio between two supported versions builds for the nearest one below it, with a warning. |
+| `strict_version` | no | `true` keeps the old hard stop: with `"auto"`, any installed Studio that is not a supported version exactly is an error. The `--strict-version` flag does the same. Default `false`. |
 | `output` | no | Output file name. `--out` on the command line wins. |
 | `title` | no | Project title shown by Studio. |
 | `printer` | yes | Printer preset, e.g. `"Bambu Lab P1S 0.4 nozzle"`. |
@@ -241,8 +242,10 @@ A job with `patch` changes an existing Bambu Studio project and writes a new fil
 changed: `mesh`, `position`, `copies` and part `type` are refused. The Studio version comes from the file, so `studio`, `title`,
 `purge` and `allow_large` are refused too.
 
-The input must be saved by Bambu Studio 2.8.2 or 2.9.1 (any build; a build other than .61 / .70 gives a warning), with one nozzle,
-and must validate with 0 errors in default mode. Orca Slicer, PrusaSlicer, older Studio versions and X2D / H2D
+The input must be saved by a supported Bambu Studio version (any build; a build other than the supported one gives a warning), with one nozzle,
+and must validate with 0 errors in default mode. A file saved by a newer 2.x Studio is accepted with a warning: it is patched with the
+rules of the newest supported version, a setting that version does not know is a warning and is kept as it is, and every entry the patch
+does not change stays byte-identical. A file from a newer MAJOR version (3.x) is refused. Orca Slicer, PrusaSlicer, older Studio versions and X2D / H2D
 files are refused with "open and save it in Bambu Studio 2.9.1 first". A sliced file (it holds G-code) is accepted: the G-code and
 everything that belongs to it is dropped and a warning says so (see "Sliced input" below).
 A project that already holds user presets (a slot with a name that is not a system preset) is accepted.

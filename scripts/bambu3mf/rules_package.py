@@ -457,7 +457,11 @@ def _override(k, v, ps, where, rep, rule):
         return
     o = ps.options.get(k)
     if o is None:
-        rep.err(rule, where, "override %r is not a Studio %s setting" % (k, ps.tag_version))
+        if getattr(ps, "newer_file", False):
+            # a file from a newer 2.x than the newest supported: a key added after it is a warning (1.3.0 forward-compatible mode)
+            rep.warn(rule, where, "override %r is not a Studio %s setting (the file is from the newer Studio %s)" % (k, ps.tag_version, ps.build_other))
+        else:
+            rep.err(rule, where, "override %r is not a Studio %s setting" % (k, ps.tag_version))
         return
     if o["preset"] != "print":
         rep.err(rule, where, "override %s is a %s setting; only process settings can be set per object or part" % (k, o["preset"]))

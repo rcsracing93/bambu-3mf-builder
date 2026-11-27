@@ -446,7 +446,7 @@ for label, base, body, want in cases:
 orca = head_edit(BASE, "orca", lambda d: d.replace(b"BambuStudio-02.08.02.61", b"OrcaSlicer-02.01.00.00"))
 check("refused: Orca Slicer file", "not by Bambu Studio" in (refused(orca, ok_body) or "") and "save it in Bambu Studio 2.9.1 first" in (refused(orca, ok_body) or ""))
 v27 = rewrite(BASE, os.path.join(tmp, "v27.3mf"), lambda n, d: d.replace(b"BambuStudio-02.08.02.61", b"BambuStudio-02.07.00.50") if n == M3 else (d.replace(b'"version": "02.08.02.61"', b'"version": "02.07.00.50"') if n == PS else d))
-check("refused: Studio 2.7", "accepts 2.8.2 and 2.9.1 only" in (refused(v27, ok_body) or ""), refused(v27, ok_body))
+check("refused: Studio 2.7", "2.7.0.50. Patch mode accepts 2.8.2" in (refused(v27, ok_body) or ""), refused(v27, ok_body))
 mism = cfg_edit(BASE, "vmism", lambda c: c.__setitem__("version", "02.09.01.70"))
 check("refused: Application and project_settings version disagree", "project settings are version" in (refused(mism, ok_body) or ""))
 multi = cfg_edit(BASE, "twonoz", lambda c: c.__setitem__("nozzle_diameter", ["0.4", "0.4"]))

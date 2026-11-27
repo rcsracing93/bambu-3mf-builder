@@ -9,7 +9,7 @@ taken from the published Bambu Studio source. It works as a Claude skill, and th
 - Every setting is checked against the Studio option table (name, type, range, allowed values) before anything is written.
 - Python 3.8 or newer, standard library only. No network calls.
 
-Built for Bambu Studio **2.8.2** and **2.9.1**. The builder picks the one installed on your computer, or the newest if none is found. Not made by or affiliated with Bambu Lab.
+Built for Bambu Studio **2.8.2** and **2.9.1**. The builder picks the one installed on your computer, or the newest if none is found. A newer Studio release does not stop it: the file is built for the newest supported version with a warning, and Studio opens it with all settings. Not made by or affiliated with Bambu Lab.
 
 ## Use it in Claude
 

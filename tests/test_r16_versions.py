@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Versions and multi-nozzle printers. Same major.minor.patch with another build (2.8.2.60): the tables of the supported
-build apply, one warning, an unknown key is a warning. Any other version: tables skipped, one warning, tables_applied false. A printer with
+build apply, one warning, an unknown key is a warning. A newer 2.x: the newest supported tables apply, one note, an unknown key is a warning. Any other version: tables skipped, one warning, tables_applied false. A printer with
 several nozzles: one warning, no list-size, preset-difference or load-simulation findings. Synthetic: a builder cube, restamped.
 Run: python3 -I tests/test_r16_versions.py"""
 import json, os, re, sys, tempfile, zipfile
@@ -62,7 +62,7 @@ bad_app = variant("b60a", lambda c: c.__setitem__("version", "02.08.02.60"), bui
 check("build .60 in project_settings but .61 in the model: R15 Application mismatch", any(f.rule == "R15" and "Application is" in f.msg for f in validate.validate(bad_app).findings))
 
 # ---- an unsupported version ------------------------------------------------------------------------------------------------------
-for ver in ("02.07.01.50", "02.08.03.10", "02.10.00.01"):
+for ver in ("02.07.01.50", "02.08.03.10", "03.00.00.01"):
     p = variant("v" + ver, lambda c, ver=ver: (c.__setitem__("version", ver), c.__setitem__("zz_unknown_key", "1"), c.__setitem__("wall_loops", "abc")), build="02.08.02.61")
     r = validate.validate(p)
     notes = [f for f in r.findings if f.rule == "R16"]
@@ -71,6 +71,17 @@ for ver in ("02.07.01.50", "02.08.03.10", "02.10.00.01"):
           and [(f.level, f.cls) for f in rs.findings if f.rule == "R16"] == [("warning", "SKIPPED")] and r.ok and rs.ok, show(r))
     check("version %s: no table-rule finding (unknown key and bad value are not reported)" % ver, not [f for f in r.findings if f.rule in ("R3", "R5", "R6") or (f.rule == "R16" and f.cls != "SKIPPED")], show(r))
     check("version %s: json says tables_applied false" % ver, json.loads(json.dumps(r.as_dict()))["tables_applied"] is False)
+
+# ---- a newer 2.x than the newest supported (1.3.0 forward-compatible mode) -------------------------------------------------------
+NV = "02.99.00.01"
+pn = variant("vnewer", lambda c: (c.__setitem__("version", NV), c.__setitem__("zz_unknown_key", "1")), build=NV)
+r = validate.validate(pn)
+note = [f for f in r.findings if f.rule == "R16" and "newer than the newest supported" in f.msg]
+check("newer 2.x: tables applied, one note that names the rules used", r.tables_applied and len(note) == 1 and note[0].level == "warning", show(r))
+unk = [f for f in r.findings if "zz_unknown_key" in f.msg]
+check("newer 2.x: an unknown key is a warning", len(unk) == 1 and unk[0].level == "warning", show(r))
+pnb = variant("vnewerb", lambda c: (c.__setitem__("version", NV), c.__setitem__("wall_loops", "abc")), build=NV)
+check("newer 2.x: the table still catches a bad value (R16 error)", any(f.rule == "R16" and f.level == "error" and "wall_loops" in f.msg for f in validate.validate(pnb).findings))
 
 # ---- several nozzles -------------------------------------------------------------------------------------------------------------
 def two(c):
