@@ -139,7 +139,7 @@ def main(argv):
     only = set(argv[argv.index("--only") + 1].split(",")) if "--only" in argv else None
     det = studio_detect.detect()
     choice = versions.choose("auto", det, STUDIO_VERSIONS)
-    expect_warn = choice.mode in ("newer", "newer-major", "between")
+    expect_warn = choice.mode in ("newer", "newer-major", "between", "unreadable")
     exe, how = studio_detect.find_cli(spath)
     tmp = tempfile.mkdtemp(prefix="forward_check_")
     lines = ["Installed Studio: %s. Builder supports: %s. Mode: %s (builds for %s)." % (det, ", ".join(STUDIO_VERSIONS), choice.mode, choice.version),

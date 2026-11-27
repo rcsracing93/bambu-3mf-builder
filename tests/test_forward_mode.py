@@ -104,6 +104,14 @@ if len(S) >= 2:
     if versions.vtuple(between) < b:
         c = versions.choose("auto", between, S)
         check("A11 between two supported versions: the nearest one below, with a warning", c.version == S[0] and c.mode == "between" and c.warning, c.warning)
+c = versions.choose("auto", "2.9.x-beta", S)
+check("A15 version text that does not parse: newest supported, with a warning that quotes the text",
+      c.version == NEWEST and c.mode == "unreadable" and c.warning == "Could not read the installed Studio version (2.9.x-beta). Built for Studio %s." % NEWEST, c.warning)
+try:
+    versions.choose("auto", "2.9.x-beta", S, strict=True); msg = None
+except versions.VersionError as e:
+    msg = str(e)
+check("A16 version text that does not parse, strict mode: hard stop", msg and msg.startswith("Installed Bambu Studio is 2.9.x-beta. Supported: "), msg)
 check("A12 file_choice: newer 2.x file uses the newest tables", versions.file_choice(NEWER_2X, S) == (NEWEST, "newer"))
 check("A13 file_choice: newer major file gets no tables", versions.file_choice(NEWER_3X, S) == (None, None))
 check("A14 file_choice: another build of a supported version", versions.file_choice(NEWEST.rsplit(".", 1)[0] + ".1", S) == (NEWEST, "build"))

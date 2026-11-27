@@ -19,6 +19,7 @@ NEWER_MAJOR = ("Built for Studio {built}. Your Studio is {installed}, a newer MA
                "for full support.")
 BETWEEN = ("Built for Studio {built}, the nearest supported version below your Studio {installed}. Studio opens this as an older "
            "project and keeps all settings.")
+UNREADABLE = "Could not read the installed Studio version ({text}). Built for Studio {built}."
 
 
 class VersionError(Exception):
@@ -31,7 +32,7 @@ class Choice:
         self.note = note                          # plain information ("no Studio found")
         self.warning = warning                    # shown in the console and the summary file
         self.auto_slice_check = auto_slice_check  # newer major: run --slice-check when Studio is found
-        self.mode = mode                          # exact | none | newer | newer-major | between | pinned
+        self.mode = mode                          # exact | none | newer | newer-major | between | pinned | unreadable
 
 
 def vtuple(text):
@@ -60,8 +61,10 @@ def choose(requested, detected, supported, strict=False):
     if detected in supported:
         return Choice(detected)
     d = vtuple(detected)
-    if d is None or strict:
+    if strict:
         raise _strict_stop(detected, supported)
+    if d is None:
+        return Choice(newest, warning=UNREADABLE.format(text=detected, built=newest), mode="unreadable")
     tups = [vtuple(s) for s in supported]
     if d < tups[0]:
         raise VersionError("Installed Bambu Studio is %s, older than the oldest supported version (%s). Update Studio, or pin a "
