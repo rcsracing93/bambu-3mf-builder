@@ -19,6 +19,18 @@ pause); none of it is print-tested.
   tower width setting; `prime_tower_width` in `settings` changes it.
 - A slot that no part uses stays in the project and its purge volume still counts. The builder warns.
 
+## Color penetration between parts (Studio 2.9.2 and newer)
+
+`color_penetration_cross_parts` is the job name for Studio's "Cross-part color penetration" (`cross_part_color_penetration`, default on).
+Studio's tooltip says: when on, color from a part's painted top and bottom surfaces can penetrate continuously into adjacent parts of the
+same object. When off, the set penetration depth is kept but clipped at the part's own boundary. In the source, a part uses its own value
+first, then its object's, then the process value. Only normal parts use it.
+
+For a body + inlay job, set `color_penetration_cross_parts = false` in `[object.settings]`. Then the color of one part stops at its own
+boundary and does not run into the other part. This follows Studio's tooltip. It is checked only by a slice in real Studio, not by a print.
+`examples/inlay_no_penetration.toml` shows it. A job for Studio 2.8.2 or 2.9.1 gets an error: the setting needs Studio 2.9.2 or newer.
+It is not allowed on a modifier part or in a height range.
+
 ## No AMS (single spool, change by hand)
 
 Use `[[layer_gcode]]` with `pause = true` at the layer where the user swaps the filament, and set the next color in the printer's own change

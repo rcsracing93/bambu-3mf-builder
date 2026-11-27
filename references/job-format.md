@@ -207,6 +207,7 @@ Settings can be written under a second spelling. It is only a name: the job is b
 | `bottom_layers` | `bottom_shell_layers` | process |
 | `supports` | `enable_support` | process |
 | `brim_size` | `brim_width` | process |
+| `color_penetration_cross_parts` | `cross_part_color_penetration` | process |
 | `nozzle_temp` | `nozzle_temperature` | filament |
 | `nozzle_temp_first_layer` | `nozzle_temperature_initial_layer` | filament |
 | `flow` | `filament_flow_ratio` | filament |

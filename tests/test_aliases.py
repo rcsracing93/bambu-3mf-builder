@@ -8,7 +8,7 @@ H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(H)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, H)
-from bambu3mf.job import load_job, JobError, PRINT_ALIASES, FILAMENT_ALIASES, PLATE_BED_ALIASES, generated_aliases  # noqa: E402
+from bambu3mf.job import load_job, JobError, PRINT_ALIASES, FILAMENT_ALIASES, PLATE_BED_ALIASES, generated_aliases, NEEDS_STUDIO_292  # noqa: E402
 from bambu3mf.profiles import ProfileSet, STUDIO_VERSIONS  # noqa: E402
 import gen_aliases  # noqa: E402
 
@@ -56,7 +56,8 @@ check("conflicting aliases were dropped, not guessed", any(d["reason"] == "two k
 leak = [(d["alias"], v) for d in DATA["dropped"] for v in d["versions"] if d["alias"] in generated_aliases(d["kind"], v)]
 check("dropped aliases do not apply in the versions they were dropped for", not leak, leak)
 # every hand alias target is a real key of its kind, both versions
-hand_bad = [(a, k, v) for a, k in PRINT_ALIASES.items() for v in PS if PS[v].options.get(k, {}).get("preset") != "print"] + \
+hand_bad = [(a, k, v) for a, k in PRINT_ALIASES.items() for v in PS if PS[v].options.get(k, {}).get("preset") != "print"
+            and not (a in NEEDS_STUDIO_292 and v < "2.9.2")] + \
            [(a, k, v) for a, k in FILAMENT_ALIASES.items() for v in PS if PS[v].options.get(k, {}).get("preset") != "filament"]
 check("hand table targets are real keys in both versions", not hand_bad, hand_bad)
 

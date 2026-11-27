@@ -17,6 +17,7 @@ ABOUT = {
     "colors_4": "Four colors, one part per color.",
     "colors_8": "Eight colors: eight parts, eight filament slots.",
     "modifier_negative": "A modifier part (80% infill in the lower half) and a negative part (a hole) on one body.",
+    "inlay_no_penetration": "Studio 2.9.2: a body part and an inlay part, with color penetration kept inside each part (`color_penetration_cross_parts = false`).",
     "multi_plate": "Two objects on two plates.",
     "pause": "A pause at 10 mm (for example to insert a magnet).",
     "per_object_settings": "Two copies of one mesh with different walls and infill.",
@@ -26,7 +27,7 @@ ABOUT = {
                          "each with its temperature cut into the front, a 45 and a 30 degree overhang, a 10 mm bridge and two stringing pins.",
 }
 ORDER = ["single_p1s", "single_p1p", "single_a1", "single_x1c", "colors_2", "colors_4", "colors_8", "modifier_negative",
-         "multi_plate", "pause", "per_object_settings", "height_ranges", "temperature_tower", "calibration_tower"]
+         "inlay_no_penetration", "multi_plate", "pause", "per_object_settings", "height_ranges", "temperature_tower", "calibration_tower"]
 
 
 def render():
