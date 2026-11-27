@@ -137,7 +137,8 @@ def coerce(option, value, where, chk):
 # option labels by tests/gen_aliases.py, listed in references/aliases.md). Any other unknown name gets the closest real names.
 PRINT_ALIASES = {"walls": "wall_loops", "infill": "sparse_infill_density", "infill_pattern": "sparse_infill_pattern",
                  "top_layers": "top_shell_layers", "bottom_layers": "bottom_shell_layers", "supports": "enable_support",
-                 "brim_size": "brim_width"}
+                 "brim_size": "brim_width", "color_penetration_cross_parts": "cross_part_color_penetration"}
+NEEDS_STUDIO_292 = {"color_penetration_cross_parts", "cross_part_color_penetration"}     # settings that exist from Studio 2.9.2 on
 FILAMENT_ALIASES = {"nozzle_temp": "nozzle_temperature", "nozzle_temp_first_layer": "nozzle_temperature_initial_layer",
                     "flow": "filament_flow_ratio"}
 PLATE_KEY = {"Cool Plate": "cool_plate_temp", "Engineering Plate": "eng_plate_temp", "High Temp Plate": "hot_plate_temp",
@@ -252,6 +253,9 @@ def _settings_table(tbl, owners, by, ver, where, chk, label, plate_type=None):
         if opt is None:
             near = _closest(key, by.keys())
             other = None
+            if key in NEEDS_STUDIO_292:
+                chk.err(w, "%s needs Studio 2.9.2 or newer. Studio %s has no setting %r. Set studio = \"2.9.2\" in the job, or remove it." % (key, ver, "cross_part_color_penetration"))
+                continue
             chk.err(w, "Studio %s has no setting %r.%s" % (ver, key, (" Closest: " + ", ".join(near)) if near else ""))
             continue
         if opt["preset"] not in owners:

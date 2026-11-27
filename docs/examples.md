@@ -475,6 +475,62 @@ Plates
   plate 1: Body x1, 20 x 20 x 20 mm; Body (filament 1), Mod (filament 1), Hole (filament 1)
 ```
 
+## inlay_no_penetration
+
+Studio 2.9.2: a body part and an inlay part, with color penetration kept inside each part (`color_penetration_cross_parts = false`).
+
+Job (`examples/inlay_no_penetration.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "inlay_no_penetration.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FFFFFF"
+
+[[object]]
+name = "Body and inlay"
+[object.settings]
+color_penetration_cross_parts = false
+[[object.part]]
+name = "Body"
+mesh = "data/slab1.stl"
+filament = 1
+[[object.part]]
+name = "Inlay"
+mesh = "data/slab2.stl"
+filament = 2
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #111111  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+  2  #FFFFFF  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Body and inlay x1, 20 x 20 x 4.8 mm; Body (filament 1), Inlay (filament 2)
+
+Purge per color change, grams (from filament in the row to filament in the column; approximate)
+             1       2
+    1        -    0.75
+    2     0.17       -
+  Wipe tower: x 165, y 220.697 (plate 1)
+  Largest single purge 0.75 g. Mode: auto
+```
+
 ## multi_plate
 
 Two objects on two plates.
