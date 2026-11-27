@@ -434,9 +434,13 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
     if not isinstance(job.allow_large, bool):
         chk.err("allow_large", "must be true or false")
         job.allow_large = False
-    job.purge = str(raw.get("purge", "auto"))
-    if job.purge not in ("auto", "default"):
-        chk.err("purge", "%r. Use \"auto\" (Studio's color-based purge volumes) or \"default\" (140 + 140 mm3 for every pair)" % job.purge)
+    job.purge_manual, job.purge_table = None, None
+    if isinstance(raw.get("purge"), dict):
+        job.purge, job.purge_table = "manual", raw["purge"]
+    else:
+        job.purge = str(raw.get("purge", "auto"))
+    if job.purge not in ("auto", "default") and not isinstance(raw.get("purge"), dict):
+        chk.err("purge", "%r. Use \"auto\" (Studio's color-based purge volumes), \"default\" (140 + 140 mm3 for every pair) or a table such as { \"1>2\" = 450 }" % job.purge)
     job.output = str(raw.get("output") or os.path.splitext(os.path.basename(path))[0] + ".3mf")
     job.title = str(raw.get("title") or os.path.splitext(job.output)[0])
     job.printer = raw.get("printer")
@@ -535,6 +539,12 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
         entry["settings"] = _settings_table(f.get("settings", {}), ("filament",), by, ver, w + ".settings", chk,
                                             "[filament.settings] (filament settings only)", job.plate_type)
         job.filaments.append(entry)
+
+    if job.purge_table is not None:
+        from . import flush as _fl
+        job.purge_manual, _errs = _fl.parse_manual(job.purge_table, len(job.filaments), job.studio)
+        for _e in _errs:
+            chk.err("purge", _e)
 
     # bed temperature for the chosen plate must be non-zero for every filament
     plate_key = PLATE_KEY

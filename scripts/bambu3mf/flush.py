@@ -11,6 +11,10 @@ import os
 import struct
 
 G_MAX = 900
+# Largest value the matrix dialog accepts for a hand-typed purge volume (WipingDialog storeData clamps to 0 .. limit / multiplier).
+# 2.8.2 and 2.9.1: g_max_flush_volume = 900. 2.9.2: g_max_flush_volume_manual = 2000 (FlushVolCalc.cpp). The smallest value is 0.
+MANUAL_MAX = {"2.8.2.61": 900, "2.9.1.70": 900, "2.9.2.62": 2000}
+MANUAL_MIN = 0
 G_MIN_FROM_SUPPORT = 700
 G_TO_SUPPORT = 230
 DATASET_FILES = {0: "flush_data_standard.txt", 1: "flush_data_dual_standard.txt", 2: "flush_data_dual_highflow.txt"}
@@ -290,3 +294,36 @@ def build_matrix(cfg, tables, mode="auto", nozzle_flush_dataset=0):
                 mat[i][j] = v
     flat = ["%d" % mat[i][j] for i in range(n) for j in range(n)]
     return {"matrix": flat, "vector": vec}
+
+
+def parse_manual(table, n, version):
+    """Check a job's purge table { "1>2" = 450 } for n slots and one Studio version. Return ({(from, to): value} with slots from 0, [errors])."""
+    out, errs = {}, []
+    limit = MANUAL_MAX.get(version, G_MAX)
+    for key, val in table.items():
+        parts = str(key).split(">")
+        if len(parts) != 2 or not all(p.strip().isdigit() for p in parts):
+            errs.append("%r is not a slot pair. Write it as \"1>2\" (from slot > to slot)." % (key,))
+            continue
+        a, b = int(parts[0]), int(parts[1])
+        if a == b:
+            errs.append("%r: a slot does not purge into itself. Use two different slots." % (key,))
+            continue
+        if not (1 <= a <= n and 1 <= b <= n):
+            errs.append("%r: slot %d does not exist. The job has %d slots." % (key, a if not 1 <= a <= n else b, n))
+            continue
+        if isinstance(val, bool) or not isinstance(val, (int, float)):
+            errs.append("%r = %r: the volume must be a number (mm3)." % (key, val))
+            continue
+        if not MANUAL_MIN <= val <= limit:
+            errs.append("%r = %s mm3 is outside %d to %d mm3, the manual limit of Studio %s." % (key, val, MANUAL_MIN, limit, version))
+            continue
+        out[(a - 1, b - 1)] = val
+    return out, errs
+
+
+def apply_manual(flush, manual, n):
+    """Write the manual values into the flat matrix (row = from slot, column = to slot)."""
+    for (i, j), v in manual.items():
+        flush["matrix"][i * n + j] = "%d" % v if float(v) == int(v) else "%g" % v
+    return flush

@@ -15,7 +15,7 @@ problem with its key name, and builds nothing until the file is clean.
 | `process` | yes | Process preset made for that printer, e.g. `"0.20mm Standard @BBL X1C"`. |
 | `plate_type` | no | Bed type, e.g. `"Textured PEI Plate"`. The builder refuses a type the filaments do not support (bed temperature 0 in the preset). `"3D Effect Plate"` needs Studio 2.9.2; its bed temperature keys are `effect_plate_temp` and `effect_plate_temp_initial_layer`. In 2.9.2 the Bambu PLA Basic, Matte and Silk+ presets also support the Engineering Plate (55 °C). |
 | `allow_large` | no | `true` lets a build go on above 10 million triangles in total (default `false`). Use it only after the user agreed. |
-| `purge` | no | `"auto"` (default: Studio's color-based purge volumes) or `"default"` (140 + 140 mm3 for every pair). |
+| `purge` | no | `"auto"` (default: Studio's color-based purge volumes) or `"default"` (140 + 140 mm3 for every pair), or a table of hand-set volumes, e.g. `{ "1>2" = 450, "2>1" = 300 }` (see "Manual purge matrix" below). |
 | `settings` | no | Table of Studio process settings, applied to the whole project. |
 
 List real preset names with `python3 scripts/build_bambu_3mf.py --list printer|process|filament [--printer NAME] [--studio V] [--match text]`.
@@ -40,6 +40,24 @@ Base templates (names starting with `fdm_`) are not selectable presets and are r
 | `settings` | no | Table of Studio filament settings for this slot, e.g. `nozzle_temperature = "225"`. |
 
 Slots are numbered 1, 2, 3 in file order. A slot no part uses stays in the project and its purge volume is still counted (warning).
+
+### Manual purge matrix
+
+`purge` can be a table. Each key is `"N>M"`: the purge volume in mm3 when the print changes from slot N to slot M. Each value is a number.
+
+```toml
+purge = { "1>2" = 450, "2>1" = 300 }
+```
+
+- Pairs you do not list keep the same values as `purge = "auto"`.
+- Both slots must exist, and N must differ from M.
+- The value must be 0 or more, and at most the manual limit of the job's Studio version: 900 mm3 for 2.8.2 and 2.9.1, 2000 mm3 for 2.9.2.
+  Studio 2.9.2 raised the limit for hand-typed values. Its own auto calculation still stops at 900 mm3.
+- The builder refuses a bad entry and names the pair, the value and the limit.
+- The builder writes the values in `flush_volumes_matrix`: row = from slot, column = to slot. Studio needs no extra flag. It keeps the
+  matrix when it opens the file, and it recalculates a matrix only when the user changes a filament color in the GUI.
+- Patch mode does not take this table. It keeps the existing matrix and calculates the new slot's row and column itself.
+- The result is validated, not print-tested.
 
 ## `[[object]]`
 

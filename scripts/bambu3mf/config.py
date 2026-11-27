@@ -279,7 +279,10 @@ def _flush(job, cfg, by, fres):
     # filament_is_support and the retraction keys are per filament; pass the slices the matrix code reads
     view = dict(cfg)
     ds = int(cfg.get("nozzle_flush_dataset", ["0"])[0]) if cfg.get("nozzle_flush_dataset") else 0
-    return fl.build_matrix(view, tables, mode=mode, nozzle_flush_dataset=ds)
+    res = fl.build_matrix(view, tables, mode="auto" if mode == "manual" else mode, nozzle_flush_dataset=ds)
+    if mode == "manual":
+        fl.apply_manual(res, getattr(job, "purge_manual", None) or {}, n)
+    return res
 
 
 def dumps(config):
