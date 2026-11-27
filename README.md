@@ -34,7 +34,7 @@ With Bambu Studio installed, `--slice-check` slices the file you just built and 
 
 A job may name one of your own saved Studio presets (process or filament) instead of a system preset. The builder reads that one file from your Studio data folder at run time (`--user-presets DIR` or `BAMBU_STUDIO_USER_DIR` to point elsewhere). The preset needs a parent system preset. The 3MF carries the parent and the changed values and the build warns that on a computer without your preset the file opens as a project preset. Details in [references/job-format.md](references/job-format.md).
 
-Next to every 3MF the builder writes `<name>.summary.md`: printer, process, plate type, Studio version, each filament slot with its preset, color, nozzle and bed temperatures and overrides, each object and part with its filament and overrides, layer G-code, and the warnings. With `--slice-check` it also holds Studio's print time and filament grams per plate. It holds file names only, no paths. `--no-summary` turns it off.
+Next to every 3MF the builder writes `<name>.summary.md`: printer, process, plate type, Studio version, each filament slot with its preset, color, nozzle and bed temperatures and overrides, each object and part with its filament and overrides, layer G-code, and the warnings. With `--slice-check` it also holds Studio's print time per plate and the grams and metres of each filament slot (the console shows them too). It holds file names only, no paths. `--no-summary` turns it off.
 
 That is **CI-verified, not print-tested**. A file that slices correctly can still print badly on your machine. Open it in Studio,
 look at the preview, and slice it yourself.

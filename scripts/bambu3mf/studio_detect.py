@@ -127,28 +127,128 @@ def find_cli(override=None):
 
 
 _TIME = re.compile(r"total estimated time:\s*([0-9dhms ]+?)\s*(?:;|$)")
-_GRAMS = re.compile(r"total filament weight \[g\]\s*:\s*([0-9.]+)")
+_GRAMS = re.compile(r"total filament weight \[g\]\s*:\s*([0-9.,]+)")
+_LENGTH = re.compile(r"total filament length \[mm\]\s*:\s*([0-9.,]+)")
+_COLOURS = re.compile(r"^; filament_colour = (.*)$")
 
 
-def read_gcode_header(path):
-    """(print time text, grams) from a Bambu G-code file header; None for what is not there."""
-    t = g = None
+def _numbers(text):
+    try:
+        return [float(x) for x in text.split(",") if x != ""]
+    except ValueError:
+        return []
+
+
+def read_gcode_usage(path):
+    """Read a Bambu G-code file header. Returns {"time": text or None, "grams": [per filament], "mm": [per filament],
+    "colours": [per filament]}. A list is empty for what is not there."""
+    out = {"time": None, "grams": [], "mm": [], "colours": []}
     try:
         with open(path, encoding="utf-8", errors="replace") as fh:
             for i, line in enumerate(fh):
                 if i > 400:
                     break
                 m = _TIME.search(line)
-                if m and t is None:
-                    t = m.group(1).strip()
+                if m and out["time"] is None:
+                    out["time"] = m.group(1).strip()
                 m = _GRAMS.search(line)
-                if m and g is None:
-                    g = float(m.group(1))
-                if t is not None and g is not None:
-                    break
+                if m and not out["grams"]:
+                    out["grams"] = _numbers(m.group(1))
+                m = _LENGTH.search(line)
+                if m and not out["mm"]:
+                    out["mm"] = _numbers(m.group(1))
+                m = _COLOURS.match(line.rstrip("\n"))
+                if m and not out["colours"]:
+                    out["colours"] = [c.strip() for c in m.group(1).split(";")]
     except OSError:
         pass
-    return t, g
+    return out
+
+
+def read_gcode_header(path):
+    """(print time text, grams) from a Bambu G-code file header; None for what is not there. Grams is the sum over all filaments."""
+    u = read_gcode_usage(path)
+    return u["time"], (sum(u["grams"]) if u["grams"] else None)
+
+
+def format_time(seconds):
+    """Studio's style: 17m 53s, 1h 5m 10s, 1d 2h 3m 4s."""
+    s = int(round(seconds))
+    d, s = divmod(s, 86400)
+    h, s = divmod(s, 3600)
+    m, s = divmod(s, 60)
+    parts = [("%dd" % d) if d else "", ("%dh" % h) if (d or h) else "", ("%dm" % m) if (d or h or m) else "", "%ds" % s]
+    return " ".join(p for p in parts if p)
+
+
+def merge_plate_usage(plate_id, res_plate, gcode_path):
+    """One plate dict. res_plate is a sliced_plates entry of result.json (or None), gcode_path the plate's G-code file.
+    Time and grams come from result.json (total_predication in seconds, filaments[].total_used_g). Metres and colours are not
+    in result.json: they come from the G-code header, as do time and grams when result.json lacks them."""
+    gc = read_gcode_usage(gcode_path)
+    rp = res_plate or {}
+    secs = rp.get("total_predication")
+    secs = float(secs) if isinstance(secs, (int, float)) else None
+    rf = [f for f in (rp.get("filaments") or []) if isinstance(f, dict) and isinstance(f.get("total_used_g"), (int, float))]
+    fils = []
+    if rf:
+        for f in sorted(rf, key=lambda f: f.get("id", 0)):
+            k = int(f.get("id", len(fils) + 1))
+            mm = gc["mm"][k - 1] if 0 < k <= len(gc["mm"]) else None
+            col = gc["colours"][k - 1] if 0 < k <= len(gc["colours"]) else None
+            fils.append({"slot": k, "grams": float(f["total_used_g"]), "metres": (mm / 1000.0) if mm is not None else None, "colour": col})
+    else:
+        for k, g in enumerate(gc["grams"], 1):
+            mm = gc["mm"][k - 1] if k <= len(gc["mm"]) else None
+            fils.append({"slot": k, "grams": g, "metres": (mm / 1000.0) if mm is not None else None,
+                         "colour": gc["colours"][k - 1] if k <= len(gc["colours"]) else None})
+    from_json = []
+    if secs is not None: from_json.append("time")
+    if rf: from_json.append("grams")
+    return {"plate": plate_id, "time": format_time(secs) if secs is not None else gc["time"], "seconds": secs,
+            "grams": sum(f["grams"] for f in fils) if fils else None, "filaments": fils,
+            "source": "result.json" if from_json == ["time", "grams"] else "G-code header"}
+
+
+def _g(x):
+    return ("%.2f" % x) if x is not None else "n/a"
+
+
+def usage_lines(plates):
+    """Console lines for a list of plate dicts (indented two spaces)."""
+    L = []
+    for pl in plates:
+        L.append("  plate %d: print time %s, filament %s g" % (pl["plate"], pl["time"] or "n/a", _g(pl["grams"])))
+        for f in pl.get("filaments") or []:
+            L.append("    filament %d%s: %s g, %s m" % (f["slot"], (" (%s)" % f["colour"]) if f.get("colour") else "", _g(f["grams"]), _g(f.get("metres"))))
+        if pl.get("filaments") and pl.get("source") == "G-code header":
+            L.append("    (Studio's result.json had no usage values; read from the G-code header)")
+    if len(plates) > 1:
+        secs = [p.get("seconds") for p in plates]
+        tt = format_time(sum(secs)) if all(s is not None for s in secs) else "n/a"
+        gs = [p["grams"] for p in plates]
+        ms = [f.get("metres") for p in plates for f in p.get("filaments") or []]
+        L.append("  total: print time %s, filament %s g, %s m" % (tt, _g(sum(gs)) if all(g is not None for g in gs) else "n/a",
+                 _g(sum(ms)) if ms and all(m is not None for m in ms) else "n/a"))
+    return L
+
+
+def usage_table_md(plates):
+    """Markdown lines: one table row per filament slot of each plate."""
+    rows = [(p, f) for p in plates for f in p.get("filaments") or []]
+    if not rows:
+        return []
+    L = ["", "| Plate | Print time | Slot | Colour | Grams | Metres |", "| --- | --- | --- | --- | --- | --- |"]
+    for p, f in rows:
+        L.append("| %d | %s | %d | %s | %s | %s |" % (p["plate"], p["time"] or "n/a", f["slot"], f.get("colour") or "n/a", _g(f["grams"]), _g(f.get("metres"))))
+    if len(plates) > 1:
+        L.append("| total | %s | | | %s | %s |" % (
+            format_time(sum(p["seconds"] for p in plates)) if all(p.get("seconds") is not None for p in plates) else "n/a",
+            _g(sum(p["grams"] for p in plates if p["grams"] is not None)),
+            _g(sum(f["metres"] for _p, f in rows if f.get("metres") is not None))))
+    if any(p.get("source") == "G-code header" for p in plates):
+        L += ["", "Studio's result.json had no usage values for some plates. Those values come from the G-code header."]
+    return L
 
 
 def slice_check(exe, f3mf, timeout=900):
@@ -180,8 +280,9 @@ def slice_details(exe, f3mf, timeout=900):
         plates = []
         for gpath in gcodes:
             m = re.search(r"plate_(\d+)\.gcode$", gpath)
-            t, g = read_gcode_header(gpath)
-            plates.append({"plate": int(m.group(1)) if m else len(plates) + 1, "time": t, "grams": g})
+            pid = int(m.group(1)) if m else len(plates) + 1
+            rps = [p for p in ((res or {}).get("sliced_plates") or []) if isinstance(p, dict) and p.get("id") == pid]
+            plates.append(merge_plate_usage(pid, rps[0] if rps else None, gpath))
         plates.sort(key=lambda p: p["plate"])
         if r.returncode == 0 and res and res.get("return_code") == 0 and gcodes:
             return True, "Studio sliced it: %d plate(s), no error" % len(gcodes), plates

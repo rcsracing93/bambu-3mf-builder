@@ -85,8 +85,8 @@ def main_patch(job_path, out, do_check, studio_path, write_md):
         else:
             ok, msg, plates = studio_detect.slice_details(exe, r.path)
             print("slice check (%s): %s" % (how, msg))
-            for pl in plates:
-                print("  plate %d: print time %s, filament %s g" % (pl["plate"], pl["time"] or "n/a", ("%.2f" % pl["grams"]) if pl["grams"] is not None else "n/a"))
+            for ln in studio_detect.usage_lines(plates):
+                print(ln)
             info = (ok, msg, plates)
             rc = 0 if ok else 1
     if write_md:
@@ -168,8 +168,8 @@ def main(argv):
             return 1
         ok, msg, plates = studio_detect.slice_details(exe, s.path)
         print("slice check (%s): %s" % (how, msg))
-        for pl in plates:
-            print("  plate %d: print time %s, filament %s g" % (pl["plate"], pl["time"] or "n/a", ("%.2f" % pl["grams"]) if pl["grams"] is not None else "n/a"))
+        for ln in studio_detect.usage_lines(plates):
+            print(ln)
         if write_md:
             summary.write_summary_file(job, s, (ok, msg, plates))
         return 0 if ok else 1
