@@ -572,6 +572,8 @@ def format_summary_md(r, slice_info=None):
         L += ["", "## Studio slice check", "", "- Result: %s" % msg]
         for pl in plates or []:
             L.append("- plate %d: print time %s, filament %s g" % (pl["plate"], pl.get("time") or "n/a", ("%.2f" % pl["grams"]) if pl.get("grams") is not None else "n/a"))
+        from .studio_detect import usage_table_md
+        L += usage_table_md(plates or [])
     return "\n".join(L) + "\n"
 
 
