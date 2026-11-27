@@ -12,7 +12,7 @@ ROOT = os.path.normpath(os.path.join(HERE, ".."))
 ENV = dict(os.environ, SOURCE_DATE_EPOCH="1700000000")
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
-from compare_release import job_copy  # noqa: E402
+from compare_release import job_copy, needs  # noqa: E402
 from bambu3mf.profiles import STUDIO_VERSIONS as VERS_FULL  # noqa: E402
 import make_release  # noqa: E402
 import pool  # noqa: E402
@@ -58,7 +58,9 @@ with tempfile.TemporaryDirectory() as tmp:
         v = run(os.path.join(R, "scripts", "validate_bambu_3mf.py"), b, "--strict") if rb.returncode == 0 and os.path.exists(b) else None
         return ver, ex, a, b, ra, rb, v
 
-    for ver, ex, a, b, ra, rb, v in pool.run(build_pair, [(ver, ex) for ver in VERS for ex in examples], N):
+    pairs = [(ver, ex) for ver in VERS for ex in examples if needs(os.path.join(ROOT, "examples", ex), ver)]
+    check("build pairs: %d (examples for a newer Studio skip the older versions)" % len(pairs), len(pairs) >= len(examples))
+    for ver, ex, a, b, ra, rb, v in pool.run(build_pair, pairs, N):
         name = "%s %s" % (ex, ver)
         check("%s builds from release" % name, ra.returncode == 0 and rb.returncode == 0, ra.stderr + rb.stderr + rb.stdout)
         if v is not None:

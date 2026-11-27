@@ -14,6 +14,23 @@ import pool  # noqa: E402
 NEW = os.path.normpath(os.path.join(H, ".."))
 
 
+def _vt(text):
+    return tuple(int(x) for x in str(text).split(".")[:3])
+
+
+def pinned(path):
+    """The studio = "x.y.z" pin of an example job, or None. An example's pin is the lowest Studio version it is for: the examples
+    made for 1.2.0 pin 2.8.2; an example that uses a 2.9.2 function pins 2.9.2."""
+    m = re.search(r'(?m)^studio\s*=\s*"([0-9.]+)"', open(path, encoding="utf-8").read())
+    return m.group(1) if m else None
+
+
+def needs(path, version):
+    """True when the example can be built for this Studio version (the version is not below the example's pin)."""
+    p = pinned(path)
+    return p is None or _vt(version) >= _vt(p)
+
+
 def job_copy(tree, example, studio):
     """A copy of the example job next to it (mesh paths stay relative), with studio set (None = the line removed: auto)."""
     src = os.path.join(tree, "examples", example)
@@ -58,6 +75,8 @@ def main(argv):
         v, ex = item
         if not os.path.exists(os.path.join(ref, "examples", ex)):
             return ("skip", v, ex, None)
+        if not needs(os.path.join(NEW, "examples", ex), v):
+            return ("needs", v, ex, None)
         outs = []
         for name, tree in (("ref", ref), ("new", NEW)):
             j = job_copy(tree, ex, v)
@@ -73,6 +92,9 @@ def main(argv):
     for kind, v, ex, outs in pool.run(one, [(v, ex) for v in versions for ex in examples], n):
         if kind == "skip":
             lines.append("SKIP %s %s (not in the reference tree)" % (v, ex))
+            continue
+        if kind == "needs":
+            lines.append("SKIP %s %s (the example is for Studio %s and newer)" % (v, ex, pinned(os.path.join(NEW, "examples", ex))))
             continue
         (ro, rr), (no, nr) = outs
         if rr.returncode != 0 and nr.returncode != 0:

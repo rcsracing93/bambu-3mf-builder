@@ -293,12 +293,17 @@ def main():
     ap.add_argument("--report")
     ap.add_argument("--work")
     a = ap.parse_args()
-    jobs = a.jobs or sorted(glob.glob(os.path.join(ROOT, "examples", "*.toml")))
+    jobs = a.jobs or sorted(p for p in glob.glob(os.path.join(ROOT, "examples", "*.toml")) if not os.path.basename(p).startswith("_"))
     work = os.path.abspath(a.work) if a.work else tempfile.mkdtemp(prefix="studio_slice_")
     os.makedirs(work, exist_ok=True)
     rep = Report()
     other = (a.other_studio_dir, a.other_version) if a.other_studio_dir else None
+    from compare_release import needs, pinned
     for j in jobs:
+        # an example made for a newer Studio (its studio pin) is not built for, or sliced in, an older one
+        if not needs(j, a.version) or (a.build_version and not needs(j, a.build_version)):
+            print("== %s: skipped, the example is for Studio %s and newer" % (os.path.basename(j)[:-5], pinned(j)))
+            continue
         check_job(j, a.studio_dir, a.version, work, rep, other, a.build_version)
     bad = [r for r in rep.rows if not r["ok"]]
     print("\n%d checks, %d failed" % (len(rep.rows), len(bad)))

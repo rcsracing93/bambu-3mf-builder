@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, H)
 from bambu3mf import studio_detect, versions, job as jobmod, mesh as meshmod  # noqa: E402
 from bambu3mf.profiles import STUDIO_VERSIONS  # noqa: E402
-from compare_release import job_copy  # noqa: E402
+from compare_release import job_copy, needs, pinned  # noqa: E402
 import harness  # noqa: E402
 import pool  # noqa: E402
 
@@ -163,6 +163,9 @@ def main(argv):
         return 1
     examples = sorted(f for f in os.listdir(os.path.join(ROOT, "examples")) if f.endswith(".toml") and not f.startswith("_"))
     examples = [ex for ex in examples if not only or ex[:-5] in only]
+    skipped = [ex for ex in examples if not needs(os.path.join(ROOT, "examples", ex), choice.version)]
+    examples = [ex for ex in examples if ex not in skipped]           # an example for a newer Studio than the build target
+    lines += ["SKIP %s (the example is for Studio %s and newer)" % (ex[:-5], pinned(os.path.join(ROOT, "examples", ex))) for ex in skipped]
     t_all = time.time()
 
     def one(ex):
