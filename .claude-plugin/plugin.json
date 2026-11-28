@@ -1,6 +1,6 @@
 {
   "name": "bambu-3mf-builder",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Build and validate Bambu Studio project 3MF files from a short job file, using rules taken from the Bambu Studio source.",
   "author": { "name": "Rick Shank" },
   "homepage": "https://github.com/rcsracing93/bambu-3mf-builder",
