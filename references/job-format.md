@@ -499,6 +499,9 @@ After the config is built, the builder checks the settings against fields of the
 | Nozzle temperature or first layer temperature outside the filament's recommended range | `nozzle_temperature`, `nozzle_temperature_initial_layer` against `nozzle_temperature_range_low` / `nozzle_temperature_range_high` (Studio shows the same warning, `ConfigManipulation.cpp`) |
 | Chamber temperature of 40 C or more on a printer that cannot control the chamber | filament `chamber_temperatures` (40 C is Studio's "high temperature" limit, `SelectMachine.cpp`), printer `support_chamber_temp_control = 0` |
 | Inlay thinner than one layer: a normal part of another filament than the tallest normal part of its object, lower than `layer_height` (object or part override, else the process value) | geometry and `layer_height` |
+| PETG fuses to a tight brim: a PETG or PETG-CF filament on the first layer of an object, a brim, and `brim_object_gap` below 0.2 mm. The warning says to set `brim_object_gap = 0.25`. | `filament_type` (PETG, PETG-CF), `brim_type`, `brim_width`, `brim_object_gap` (an object setting overrides the process value) |
+
+The brim rule counts a brim when `brim_type` is `outer_only`, `inner_only` or `outer_and_inner` and `brim_width` is above 0. `no_brim` and `brim_ears` give no warning. With `auto_brim` (the Studio default) Studio computes a brim width per object from its height, area and adhesion, and makes no brim when that width is under 5 mm (Brim.cpp), so many objects get none. The rule warns only when your job sets `brim_object_gap` itself, and the text says "if Studio adds a brim". The default preset gap of 0.1 mm gives no warning alone. The filament is the one of each normal part that touches the bottom of the object.
 
 Not lint rules:
 

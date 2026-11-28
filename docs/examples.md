@@ -1297,3 +1297,50 @@ Filaments
 Plates
   plate 1: Block x1, 20 x 20 x 20 mm; Part 1 (filament 1)
 ```
+
+## petg_brim_lint
+
+PETG HF with an outer brim and a 0.1 mm brim gap. The builder prints a lint warning on purpose: PETG fuses to a tight brim, set `brim_object_gap = 0.25`. The warning never blocks the build.
+
+Job (`examples/petg_brim_lint.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "petg_brim_lint.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+plate_type = "Textured PEI Plate"
+
+# On purpose: PETG with a brim and a 0.1 mm brim gap. The builder prints a lint warning
+# ("PETG fuses to a tight brim; set brim_object_gap = 0.25"). Set the gap to 0.25 and the warning is gone.
+[settings]
+brim_type = "outer_only"
+brim_width = 5
+brim_object_gap = 0.1
+
+[[filament]]
+preset = "Bambu PETG HF @BBL P1S 0.4 nozzle"
+color = "#2E6FC1"
+
+[[object]]
+name = "Cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Textured PEI Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #2E6FC1  Bambu PETG HF @BBL P1S 0.4 nozzle  nozzle 245 C  flow 0.95
+
+Plates
+  plate 1: Cube x1, 20 x 20 x 20 mm; Part 1 (filament 1)
+
+warning: lint: object Cube, filament 1 (Bambu PETG HF @BBL P1S 0.4 nozzle, PETG): PETG fuses to a tight brim; set brim_object_gap = 0.25. The gap is 0.1 mm (brim_object_gap) with brim_type = outer_only.
+```

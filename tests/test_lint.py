@@ -132,7 +132,12 @@ try:
     for ex in list_examples(paths=True):
         d = os.path.join(tmp, "ex_" + os.path.basename(ex)[:-5]); os.makedirs(d)
         s = package.build(load_job(ex), os.path.join(d, "o.3mf"))
-        check("example %s: no lint warning" % os.path.basename(ex), not [x for x in s.warnings if x.startswith("lint:")], s.warnings)
+        lw = [x for x in s.warnings if x.startswith("lint:")]
+        if os.path.basename(ex) == "petg_brim_lint.toml":
+            # This one example shows the PETG brim warning on purpose (tests/test_brim_lint.py covers the rule): exactly that one warning.
+            check("example petg_brim_lint.toml: exactly the PETG brim warning", len(lw) == 1 and "PETG fuses to a tight brim" in lw[0], lw)
+            continue
+        check("example %s: no lint warning" % os.path.basename(ex), not lw, s.warnings)
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
