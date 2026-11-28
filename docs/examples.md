@@ -997,3 +997,51 @@ Layer G-code (4 steps)
   plate 1  z 26.2  temperature 215
   plate 1  z 34.2  temperature 210
 ```
+
+## calib_tolerance
+
+A peg and hole fit test: five square holes and five pegs with clearances 0.1 to 0.3 mm, each labelled. The builder makes the objects; the clearance is the gap per side between flat faces. Validated, not print-tested.
+
+Job (`examples/calib_tolerance.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "calib_tolerance.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FF8000"
+
+# A peg / hole fit test. For each clearance the builder makes a square hole block and a square peg, each labelled with the clearance.
+# The clearance is the gap on each side: hole side = size + 2 x clearance. Pegs are separate objects, so you can push them in.
+[calibration]
+type = "tolerance"
+clearances = [0.1, 0.15, 0.2, 0.25, 0.3]   # mm, 1 to 8 values, 0.02 to 1.0
+size = 10                                   # mm, side of the peg, 4 to 30
+depth = 6                                   # mm, hole depth and peg height, 3 to 20
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #FF8000  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Hole 0.1 x1, 22.2 x 22.2 x 6 mm; Hole 0.1 (filament 1), Label 0.1 (filament 1)
+  plate 1: Peg 0.1 x1, 22.2 x 22.2 x 8 mm; Peg 0.1 (filament 1), Label 0.1 (filament 1)
+  plate 1: Hole 0.15 x1, 22.3 x 22.3 x 6 mm; Hole 0.15 (filament 1), Label 0.15 (filament 1)
+  plate 1: Peg 0.15 x1, 22.3 x 22.3 x 8 mm; Peg 0.15 (filament 1), Label 0.15 (filament 1)
+  plate 1: Hole 0.2 x1, 22.4 x 22.4 x 6 mm; Hole 0.2 (filament 1), Label 0.2 (filament 1)
+  plate 1: Peg 0.2 x1, 22.4 x 22.4 x 8 mm; Peg 0.2 (filament 1), Label 0.2 (filament 1)
+  plate 1: Hole 0.25 x1, 22.5 x 22.5 x 6 mm; Hole 0.25 (filament 1), Label 0.25 (filament 1)
+  plate 1: Peg 0.25 x1, 22.5 x 22.5 x 8 mm; Peg 0.25 (filament 1), Label 0.25 (filament 1)
+  plate 1: Hole 0.3 x1, 22.6 x 22.6 x 6 mm; Hole 0.3 (filament 1), Label 0.3 (filament 1)
+  plate 1: Peg 0.3 x1, 22.6 x 22.6 x 8 mm; Peg 0.3 (filament 1), Label 0.3 (filament 1)
+```
