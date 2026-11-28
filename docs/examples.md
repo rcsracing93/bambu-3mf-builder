@@ -1079,6 +1079,10 @@ Plates
   plate 1: Flow 1.00 x1, 28 x 28 x 3 mm; Flow 1.00 (filament 1), Label 1.00 (filament 1)
   plate 1: Flow 1.05 x1, 28 x 28 x 3 mm; Flow 1.05 (filament 1), Label 1.05 (filament 1)
   plate 1: Flow 1.10 x1, 28 x 28 x 3 mm; Flow 1.10 (filament 1), Label 1.10 (filament 1)
+
+Calibration print: flow, 5 objects
+  meaning: each pad prints with its label as the object flow ratio; effective flow = filament flow ratio x label
+  ratios: 0.90, 0.95, 1.00, 1.05, 1.10
 ```
 
 ## calib_pa
@@ -1121,6 +1125,12 @@ Filaments
 
 Plates
   plate 1: PA tower x1, 84 x 42 x 35 mm; PA tower (filament 1), Label 0 (filament 1), Label 0.01 (filament 1), Label 0.02 (filament 1), Label 0.03 (filament 1), Label 0.04 (filament 1), Label 0.05 (filament 1), Label 0.06 (filament 1)
+
+Calibration print: pa, 1 object
+  band_height: 5
+  layer_tops: 0.2, 5.2, 10.2, 15.2, 20.2, 25.2, 30.2
+  note: M900 K<value> at the first layer of each band; read the sharpest corner without bulge
+  values: 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06
 
 Layer G-code (7 steps)
   plate 1  z 0.2  gcode M900 K0
@@ -1181,6 +1191,14 @@ Plates
     height 40-45 mm: layer 0.2 mm, outer_wall_speed 344.75
     height 45-50 mm: layer 0.2 mm, outer_wall_speed 371.27
     height 50-55 mm: layer 0.2 mm, outer_wall_speed 397.79
+
+Calibration print: mvs, 1 object
+  area_mm2: 0.07542
+  band_height_mm: 5
+  flows_mm3_per_s: 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
+  layer_height_mm: 0.2
+  line_width_mm: 0.42
+  outer_wall_speeds_mm_per_s: 132.6, 159.12, 185.64, 212.16, 238.68, 265.2, 291.72, 318.24, 344.75, 371.27, 397.79
 ```
 
 ## calib_tolerance
@@ -1229,4 +1247,9 @@ Plates
   plate 1: Peg 0.25 x1, 22.5 x 22.5 x 8 mm; Peg 0.25 (filament 1), Label 0.25 (filament 1)
   plate 1: Hole 0.3 x1, 22.6 x 22.6 x 6 mm; Hole 0.3 (filament 1), Label 0.3 (filament 1)
   plate 1: Peg 0.3 x1, 22.6 x 22.6 x 8 mm; Peg 0.3 (filament 1), Label 0.3 (filament 1)
+
+Calibration print: tolerance, 10 objects
+  clearances: 0.1, 0.15, 0.2, 0.25, 0.3
+  depth: 6
+  size: 10
 ```
