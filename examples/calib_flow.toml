@@ -1,0 +1,15 @@
+studio  = "2.9.2"
+output  = "calib_flow.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FF8000"
+
+# Five flat pads, each with its own object flow ratio (print_flow_ratio), engraved on the front edge of the pad.
+# The label is the per-object factor. Effective flow = the filament's flow ratio x the label.
+# Omit ratios to get this default list. 2 to 9 values from 0.5 to 1.5, at most 3 decimals.
+[calibration]
+type = "flow"
+ratios = [0.90, 0.95, 1.00, 1.05, 1.10]

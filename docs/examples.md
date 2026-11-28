@@ -997,3 +997,45 @@ Layer G-code (4 steps)
   plate 1  z 26.2  temperature 215
   plate 1  z 34.2  temperature 210
 ```
+
+## calib_flow
+
+Flow calibration (Studio 2.9.2): five 28 mm pads with object flow ratios 0.90 to 1.10, each with its ratio engraved on the front edge. The effective flow is the filament flow ratio times the label. Validated, not print-tested.
+
+Job (`examples/calib_flow.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "calib_flow.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FF8000"
+
+# Five flat pads, each with its own object flow ratio (print_flow_ratio), engraved on the front edge of the pad.
+# The label is the per-object factor. Effective flow = the filament's flow ratio x the label.
+# Omit ratios to get this default list. 2 to 9 values from 0.5 to 1.5, at most 3 decimals.
+[calibration]
+type = "flow"
+ratios = [0.90, 0.95, 1.00, 1.05, 1.10]
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #FF8000  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Flow 0.90 x1, 28 x 28 x 3 mm; Flow 0.90 (filament 1), Label 0.90 (filament 1)
+  plate 1: Flow 0.95 x1, 28 x 28 x 3 mm; Flow 0.95 (filament 1), Label 0.95 (filament 1)
+  plate 1: Flow 1.00 x1, 28 x 28 x 3 mm; Flow 1.00 (filament 1), Label 1.00 (filament 1)
+  plate 1: Flow 1.05 x1, 28 x 28 x 3 mm; Flow 1.05 (filament 1), Label 1.05 (filament 1)
+  plate 1: Flow 1.10 x1, 28 x 28 x 3 mm; Flow 1.10 (filament 1), Label 1.10 (filament 1)
+```

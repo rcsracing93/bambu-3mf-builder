@@ -207,7 +207,31 @@ Rules for every type:
 
 ### `type = "flow"`
 
-Not built yet.
+A set of flat pads. Each pad has its own object flow ratio (Studio's `print_flow_ratio`) and an engraved label with that value. The
+pads are 28 x 28 x 3 mm. The label is on the front edge of the top face; the rest of the top face stays flat so you can see over- or
+under-extrusion. The test settings are 5 top layers and no ironing (ironing would hide the difference).
+
+| Key | Meaning | Default |
+|---|---|---|
+| `ratios` | List of 2 to 9 object flow ratios, 0.5 to 1.5, at most 3 decimals, no repeats. One pad per value, in this order. | `[0.90, 0.95, 1.00, 1.05, 1.10]` |
+
+What the label means: it is the per-object factor, not the final flow. Studio multiplies the extruded volume of every path in the
+object by `print_flow_ratio`. The filament's own `filament_flow_ratio` (for Bambu PLA Basic, 0.98) is already in the path flow, so
+the two multiply: effective flow = filament flow ratio x label. A pad labelled 1.05 prints 5% more than a pad labelled 1.00.
+(Studio source: `GCode.cpp`, `_mm3_per_mm = path.mm3_per_mm * print_flow_ratio`.) The first layer and top solid infill have their own
+extra ratios (`initial_layer_flow_ratio`, `top_solid_infill_flow_ratio`); they apply to every pad in the same way.
+
+To use the result: pick the pad with the best top surface. Its label is the factor to apply to your current filament flow ratio.
+New `filament_flow_ratio` = old value x label. Example: pad 0.95 looks best with a filament ratio of 0.98, so use 0.98 x 0.95 = 0.931.
+The file is validated, not print-tested.
+
+```toml
+[calibration]
+type = "flow"
+ratios = [0.95, 0.975, 1.00, 1.025, 1.05]
+```
+
+The type works for Studio 2.8.2, 2.9.1 and 2.9.2 (`print_flow_ratio` exists in all three). The example pins 2.9.2.
 
 ### `type = "pa"`
 
