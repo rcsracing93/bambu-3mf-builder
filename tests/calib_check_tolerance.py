@@ -46,8 +46,10 @@ def shells(mesh):
 
 
 def hole_gap(mesh):
-    """(gap along x, gap along y) of the square hole of a Hole body (four strips around it), or None."""
+    """(gap along x, gap along y) of the square hole of a Hole body (four strips around it, and the low label ledge in front), or None."""
     sh = shells(mesh)
+    top = max(b[1][2] for b in sh) if sh else 0
+    sh = [b for b in sh if b[1][2] > top - 1e-6]          # the strips are full height; the ledge is lower
     if len(sh) != 4:
         return None
     left, right = min(sh, key=lambda b: b[1][0]), max(sh, key=lambda b: b[0][0])

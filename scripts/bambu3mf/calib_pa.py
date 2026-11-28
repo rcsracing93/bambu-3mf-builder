@@ -11,10 +11,10 @@ Why a custom M900 works (checked on Studio 2.9.2.62, P1S, see tests/calib_check_
   - The P1S start G-code and the filament start G-code have no M900 line.
 So the K of a band stays in force until the next M900 line.
 
-Shape (all in one object, one filament):
-  - the tower: a hollow square tube, 30 mm wide, 0.84 mm walls (two 0.42 mm loops), open top, no infill. Four sharp corners per
-    layer, thin walls. It stands on the bed (no floor plate).
-  - the label stairs, in front of the tower: one step per band. Step i has its flat top face at the TOP of band i, and the K value
+Shape (two objects, one filament):
+  - the tower: a hollow square tube, 30 mm wide, 0.84 mm walls (two 0.42 mm loops), open top, no infill (0% on this object only).
+    Four sharp corners per layer, thin walls. It stands on the bed (no floor plate).
+  - the label stairs, a separate object beside the tower, with normal infill and a void under each label: one step per band. Step i has its flat top face at the TOP of band i, and the K value
     is engraved into that face (0.5 mm deep, at least 1.0 mm of material below). The tower walls are never cut.
 """
 from .calibration import CalibrationError, _Shells
@@ -26,15 +26,17 @@ DEFAULT_START, DEFAULT_END, DEFAULT_STEP, DEFAULT_BAND = 0.0, 0.06, 0.01, 5.0
 MIN_BANDS, MAX_BANDS = 2, 12
 BAND_LO, BAND_HI = 2.0, 20.0         # mm; at least 2 mm so the first stair step has 1.5 mm of material for a label
 TOWER, WALL = 30.0, 0.84              # mm
-STEP_D, GAP = 6.0, 6.0                # mm: stair depth, space between the stairs and the tower
+STEP_D = 6.0                          # mm: stair depth
 STEP_MIN_W = 12.0
 
 # What makes the test valid (process settings, applied to the whole job):
 PROCESS = {
     "wall_loops": 2,                  # the 0.84 mm wall is exactly two loops
-    "sparse_infill_density": "0%",    # nothing inside the tube
     "outer_wall_speed": 200,          # fast enough that the corner pressure shows (16.8 mm3/s at 0.2 mm layers, under PLA's limit)
     "inner_wall_speed": 200,
+}
+TOWER_SETTINGS = {
+    "sparse_infill_density": "0%",    # nothing inside the tube (on the tower object only; the label stairs keep normal infill)
 }
 FILAMENT = {
     "slow_down_for_layer_cooling": False,   # a 30 mm tube is a short layer; the cooling slowdown would take the speed away
@@ -95,15 +97,18 @@ def build(ctx):
     lw = max(cj.label_size(t)[0] for t in labels_text)
     stepw = max(STEP_MIN_W, round(lw + 2 * cj.FACE_MARGIN + 0.4, 1))
 
-    sh = _Shells("PA tower")
-    # stairs: one closed shell, profile in x-z extruded over the depth. Step i is stepw wide and (i + 1) * band tall.
+    # stairs: their own object (normal sparse infill, a void under each label), so the tower's 0% infill does not reach them; under
+    # 0% the stair's inside is "internal void" and the label bands would use the floating-concentric filler (calibjobs LABEL_PLATE).
+    # One closed shell, profile in x-z extruded over the depth. Step i is stepw wide and (i + 1) * band tall.
+    st = _Shells("PA labels")
     poly = [(0.0, 0.0), (n * stepw, 0.0)]
     for i in range(n - 1, -1, -1):
         poly += [((i + 1) * stepw, (i + 1) * band), (i * stepw, (i + 1) * band)]
-    sh.prism(poly, 0.0, STEP_D)
+    st.prism(poly, 0.0, STEP_D)
+    stairs = st.mesh.finish()
     # tower: four wall boxes that overlap at the corners (the slicer joins them); no two shells share a corner point
-    ty0 = STEP_D + GAP
-    tx0 = (n * stepw - TOWER) / 2.0
+    sh = _Shells("PA tower")
+    ty0, tx0 = 0.0, 0.0
     th = n * band
     t, L = WALL, TOWER
     sh.box(tx0, tx0 + L, ty0, ty0 + t, 0.0, th)                                     # front wall
@@ -125,7 +130,8 @@ def build(ctx):
     ctx.set_filament(FILAMENT)
     if str(ctx.value("enable_pressure_advance")).lower() in ("1", "true"):
         ctx.warn("", "the filament preset has enable_pressure_advance on; for a Bambu printer Studio does not write it, so the custom M900 lines decide")
-    ctx.add_object("PA tower", body, labels)
+    ctx.add_object("PA tower", body, [], settings=TOWER_SETTINGS)
+    ctx.add_object("PA labels", stairs, labels)
 
     zs = []
     for i, v in enumerate(vs):

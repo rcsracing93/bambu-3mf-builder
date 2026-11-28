@@ -244,7 +244,9 @@ Rules for every type:
 
 - The job has one `[[filament]]` table and no `[[object]]` tables. `[calibration]` and `[temperature_tower]` cannot be in one job.
 - Each object carries its value as an engraved label: 0.5 mm deep marks on a flat top face (digits, `.` and `-`). A label never cuts
-  a load-bearing section: it leaves at least 1.0 mm of solid material under the cut.
+  a load-bearing section: it leaves at least 1.0 mm of solid material under the cut. Under a face thicker than 2.7 mm the builder
+  leaves a small void, so the face is a 1.5 mm solid plate (shells only); with sparse infill under the thin bands around the marks,
+  Studio's floating-concentric fill there can lose pieces on the Linux build of Studio 2.9.2.
 - Placement: every object stays outside the printer's `bed_exclude_area` (on the P1S X 0-18, Y 0-28) and at least 15 mm from the
   front edge, clear of the nozzle load line the start G-code draws there.
 - Settings the type writes are checked like the settings you write (names, types, ranges).
@@ -253,7 +255,7 @@ Rules for every type:
 ### `type = "flow"`
 
 A set of flat pads. Each pad has its own object flow ratio (Studio's `print_flow_ratio`) and an engraved label with that value. The
-pads are 28 x 28 x 3 mm. The label is on the front edge of the top face; the rest of the top face stays flat so you can see over- or
+pads are 28 x 28 x 1.6 mm (top and bottom shells only, no sparse infill). The label is on the front edge of the top face; the rest of the top face stays flat so you can see over- or
 under-extrusion. The test settings are 5 top layers and no ironing (ironing would hide the difference).
 
 | Key | Meaning | Default |
@@ -292,8 +294,8 @@ the K to use.
 
 K must be from 0 to the `pressure_advance` maximum of the Studio options (2). Other values are refused. 2 to 12 bands.
 
-The object is a hollow square tower (30 mm, 0.84 mm walls, open top, no infill) and, in front of it, a stair with one step per
-band. The flat top face of step *n* is at the top of band *n*. The K value is engraved in that face. The tower walls are never cut.
+There are two objects: a hollow square tower (30 mm, 0.84 mm walls, open top, no infill) and, beside it, a stair with one step per
+band (normal infill). The flat top face of step *n* is at the top of band *n*. The K value is engraved in that face. The tower walls are never cut.
 Each band starts with a layer G-code step at the first layer of the band (at `i * band_height`, snapped up to a layer top, so the
 first band has it on layer 1).
 
@@ -361,11 +363,11 @@ A peg and hole fit test. You find the clearance that fits your printer and filam
 For each clearance the builder makes two objects:
 
 - `Hole <c>`: a block `depth` thick with a square hole through it. The hole is real, not a negative part. The hole side is `size + 2 x c`.
-- `Peg <c>`: a flange 2 mm thick with a square peg of side `size` and height `depth`. It prints flange down. Push the peg into the hole of the same label.
+- `Peg <c>`: a flange 1.6 mm thick with a square peg of side `size` and height `depth`. It prints flange down. Push the peg into the hole of the same label.
 
 The clearance is the gap on each of the four sides between two flat faces: `(hole side - peg side) / 2`. A square has no vertices
-to round off, so the number is exact in the mesh. Each object has its clearance engraved in the top face of its front band (the 6 mm
-band at the front of the block or flange). Pegs and holes are separate objects, so you can pull them off the plate and test them.
+to round off, so the number is exact in the mesh. Each object has its clearance engraved in a 1.6 mm high face: a 6 mm ledge in front
+of the block, and the front band of the flange. Pegs and holes are separate objects, so you can pull them off the plate and test them.
 All meshes are closed. The file is validated, not print-tested. Slicers, printers and filaments change real clearances (flow, wall
 order, shrinkage), so the label is the designed gap, not a promise. Pick the smallest clearance that slides without force.
 

@@ -1074,11 +1074,11 @@ Filaments
   1  #FF8000  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
 
 Plates
-  plate 1: Flow 0.90 x1, 28 x 28 x 3 mm; Flow 0.90 (filament 1), Label 0.90 (filament 1)
-  plate 1: Flow 0.95 x1, 28 x 28 x 3 mm; Flow 0.95 (filament 1), Label 0.95 (filament 1)
-  plate 1: Flow 1.00 x1, 28 x 28 x 3 mm; Flow 1.00 (filament 1), Label 1.00 (filament 1)
-  plate 1: Flow 1.05 x1, 28 x 28 x 3 mm; Flow 1.05 (filament 1), Label 1.05 (filament 1)
-  plate 1: Flow 1.10 x1, 28 x 28 x 3 mm; Flow 1.10 (filament 1), Label 1.10 (filament 1)
+  plate 1: Flow 0.90 x1, 28 x 28 x 1.6 mm; Flow 0.90 (filament 1), Label 0.90 (filament 1)
+  plate 1: Flow 0.95 x1, 28 x 28 x 1.6 mm; Flow 0.95 (filament 1), Label 0.95 (filament 1)
+  plate 1: Flow 1.00 x1, 28 x 28 x 1.6 mm; Flow 1.00 (filament 1), Label 1.00 (filament 1)
+  plate 1: Flow 1.05 x1, 28 x 28 x 1.6 mm; Flow 1.05 (filament 1), Label 1.05 (filament 1)
+  plate 1: Flow 1.10 x1, 28 x 28 x 1.6 mm; Flow 1.10 (filament 1), Label 1.10 (filament 1)
 
 Calibration print: flow, 5 objects
   meaning: each pad prints with its label as the object flow ratio; effective flow = filament flow ratio x label
@@ -1118,15 +1118,16 @@ Builder summary:
 ```
   Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
   Plate type: Cool Plate
-  Walls 2, infill 0% rectilinear, layer 0.2 mm
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
 
 Filaments
   1  #1F77B4  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
 
 Plates
-  plate 1: PA tower x1, 84 x 42 x 35 mm; PA tower (filament 1), Label 0 (filament 1), Label 0.01 (filament 1), Label 0.02 (filament 1), Label 0.03 (filament 1), Label 0.04 (filament 1), Label 0.05 (filament 1), Label 0.06 (filament 1)
+  plate 1: PA tower x1, 30 x 30 x 35 mm; PA tower (filament 1)
+  plate 1: PA labels x1, 84 x 6 x 35 mm; PA labels (filament 1), Label 0 (filament 1), Label 0.01 (filament 1), Label 0.02 (filament 1), Label 0.03 (filament 1), Label 0.04 (filament 1), Label 0.05 (filament 1), Label 0.06 (filament 1), Label 1 void (filament 1), Label 2 void (filament 1), Label 3 void (filament 1), Label 4 void (filament 1), Label 5 void (filament 1), Label 6 void (filament 1), Label 7 void (filament 1)
 
-Calibration print: pa, 1 object
+Calibration print: pa, 2 objects
   band_height: 5
   layer_tops: 0.2, 5.2, 10.2, 15.2, 20.2, 25.2, 30.2
   note: M900 K<value> at the first layer of each band; read the sharpest corner without bulge
@@ -1179,7 +1180,7 @@ Filaments
   1  #2060C0  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
 
 Plates
-  plate 1: MVS tube x1, 80.5 x 36 x 55 mm; MVS tube (filament 1), Flow 10 (filament 1), Flow 12 (filament 1), Flow 14 (filament 1), Flow 16 (filament 1), Flow 18 (filament 1), Flow 20 (filament 1), Flow 22 (filament 1), Flow 24 (filament 1), Flow 26 (filament 1), Flow 28 (filament 1), Flow 30 (filament 1)
+  plate 1: MVS tube x1, 80.5 x 36 x 55 mm; MVS tube (filament 1), Flow 10 (filament 1), Flow 12 (filament 1), Flow 14 (filament 1), Flow 16 (filament 1), Flow 18 (filament 1), Flow 20 (filament 1), Flow 22 (filament 1), Flow 24 (filament 1), Flow 26 (filament 1), Flow 28 (filament 1), Flow 30 (filament 1), Label 1 void (filament 1), Label 2 void (filament 1), Label 3 void (filament 1), Label 4 void (filament 1), Label 5 void (filament 1), Label 6 void (filament 1), Label 7 void (filament 1), Label 8 void (filament 1), Label 9 void (filament 1), Label 10 void (filament 1), Label 11 void (filament 1)
     height 0-5 mm: layer 0.2 mm, outer_wall_speed 132.6
     height 5-10 mm: layer 0.2 mm, outer_wall_speed 159.12
     height 10-15 mm: layer 0.2 mm, outer_wall_speed 185.64
@@ -1237,16 +1238,16 @@ Filaments
   1  #FF8000  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
 
 Plates
-  plate 1: Hole 0.1 x1, 22.2 x 22.2 x 6 mm; Hole 0.1 (filament 1), Label 0.1 (filament 1)
-  plate 1: Peg 0.1 x1, 22.2 x 22.2 x 8 mm; Peg 0.1 (filament 1), Label 0.1 (filament 1)
-  plate 1: Hole 0.15 x1, 22.3 x 22.3 x 6 mm; Hole 0.15 (filament 1), Label 0.15 (filament 1)
-  plate 1: Peg 0.15 x1, 22.3 x 22.3 x 8 mm; Peg 0.15 (filament 1), Label 0.15 (filament 1)
-  plate 1: Hole 0.2 x1, 22.4 x 22.4 x 6 mm; Hole 0.2 (filament 1), Label 0.2 (filament 1)
-  plate 1: Peg 0.2 x1, 22.4 x 22.4 x 8 mm; Peg 0.2 (filament 1), Label 0.2 (filament 1)
-  plate 1: Hole 0.25 x1, 22.5 x 22.5 x 6 mm; Hole 0.25 (filament 1), Label 0.25 (filament 1)
-  plate 1: Peg 0.25 x1, 22.5 x 22.5 x 8 mm; Peg 0.25 (filament 1), Label 0.25 (filament 1)
-  plate 1: Hole 0.3 x1, 22.6 x 22.6 x 6 mm; Hole 0.3 (filament 1), Label 0.3 (filament 1)
-  plate 1: Peg 0.3 x1, 22.6 x 22.6 x 8 mm; Peg 0.3 (filament 1), Label 0.3 (filament 1)
+  plate 1: Hole 0.1 x1, 22.2 x 28.2 x 6 mm; Hole 0.1 (filament 1), Label 0.1 (filament 1)
+  plate 1: Peg 0.1 x1, 22.2 x 22.2 x 7.6 mm; Peg 0.1 (filament 1), Label 0.1 (filament 1)
+  plate 1: Hole 0.15 x1, 22.3 x 28.3 x 6 mm; Hole 0.15 (filament 1), Label 0.15 (filament 1)
+  plate 1: Peg 0.15 x1, 22.3 x 22.3 x 7.6 mm; Peg 0.15 (filament 1), Label 0.15 (filament 1)
+  plate 1: Hole 0.2 x1, 22.4 x 28.4 x 6 mm; Hole 0.2 (filament 1), Label 0.2 (filament 1)
+  plate 1: Peg 0.2 x1, 22.4 x 22.4 x 7.6 mm; Peg 0.2 (filament 1), Label 0.2 (filament 1)
+  plate 1: Hole 0.25 x1, 22.5 x 28.5 x 6 mm; Hole 0.25 (filament 1), Label 0.25 (filament 1)
+  plate 1: Peg 0.25 x1, 22.5 x 22.5 x 7.6 mm; Peg 0.25 (filament 1), Label 0.25 (filament 1)
+  plate 1: Hole 0.3 x1, 22.6 x 28.6 x 6 mm; Hole 0.3 (filament 1), Label 0.3 (filament 1)
+  plate 1: Peg 0.3 x1, 22.6 x 22.6 x 7.6 mm; Peg 0.3 (filament 1), Label 0.3 (filament 1)
 
 Calibration print: tolerance, 10 objects
   clearances: 0.1, 0.15, 0.2, 0.25, 0.3

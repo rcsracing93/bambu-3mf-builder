@@ -2,10 +2,10 @@
 
 For each clearance c the job makes two objects:
   Hole <c>  a block `depth` thick with a square hole (side size + 2c) through it. The hole is real: the block is four strips around it.
-  Peg <c>   a flange 2 mm thick with a square peg (side size, height depth) on it. It prints flange down and pushes into the hole.
+  Peg <c>   a flange 1.6 mm thick with a square peg (side size, height depth) on it. It prints flange down and pushes into the hole.
 The clearance is the gap on each of the four sides between two flat faces: (hole side - peg side) / 2. Faces are flat and square, so
-the number is exact in the mesh and does not depend on a polygon's vertices. Each object carries "<c>" engraved in the top face of its
-front strip (the 6 mm band at the front of the block, and of the flange).
+the number is exact in the mesh and does not depend on a polygon's vertices. Each object carries "<c>" engraved in a 1.6 mm high
+face: a ledge in front of the block, and the front band of the flange (shells only, so no sparse infill lies under the label).
 """
 from . import calibjobs
 from .calibration import CalibrationError, _Shells
@@ -15,7 +15,8 @@ DEFAULT_CLEARANCES = [0.1, 0.15, 0.2, 0.25, 0.3]
 DEFAULT_SIZE = 10.0
 DEFAULT_DEPTH = 6.0
 WALL = 6.0            # mm, width of the block around the hole and of the front band that holds the label
-FLANGE = 2.0          # mm, thickness of the peg flange (a 0.5 mm label leaves 1.5 mm)
+FLANGE = 1.6          # mm, thickness of the peg flange: top and bottom shells only, no sparse infill (a 0.5 mm label leaves 1.1 mm)
+LEDGE = 1.6           # mm, height of the label ledge in front of a hole block (shells only, like the flange)
 SINK = 1.0            # mm, the peg and the strips overlap their neighbours by this much (the slicer unions them)
 
 
@@ -33,11 +34,14 @@ def hole_body(size, c, depth):
     h = round((size + 2 * c) / 2.0, 6)
     o = round(outer(size, c) / 2.0, 6)
     sh = _Shells("Hole %s" % fmt(c))
-    sh.box(-o, o, -o, round(-h, 6), 0.0, depth)                              # front strip (holds the label)
+    sh.box(-o, o, -o, round(-h, 6), 0.0, depth)                              # front strip
     sh.box(-o, o, h, o, 0.0, depth)                                          # back strip
     sh.box(-o, -h, round(-h - SINK, 6), round(h + SINK, 6), 0.0, depth)     # left strip, overlaps the front and back strips
     sh.box(h, o, round(-h - SINK, 6), round(h + SINK, 6), 0.0, depth)       # right strip
-    return sh.mesh.finish(), (-o, o, -o, -h, depth, depth)
+    # the label sits on a low ledge in front of the block, not on the block's top: a label cut into a tall block lies over sparse
+    # infill, and Studio uses its floating-concentric filler there (calibjobs LABEL_PLATE)
+    sh.box(-o, o, round(-o - WALL, 6), round(-o + SINK, 6), 0.0, LEDGE)
+    return sh.mesh.finish(), (-o, o, round(-o - WALL, 6), -o, LEDGE, LEDGE)
 
 
 def peg_body(size, c, depth):

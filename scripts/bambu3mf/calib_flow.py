@@ -12,7 +12,7 @@ from .calibration import _Shells
 KEYS = {"ratios"}
 DEFAULT_RATIOS = [0.90, 0.95, 1.00, 1.05, 1.10]
 PAD = 28.0          # mm, side of a pad
-THICK = 3.0         # mm; the label cut leaves 2.5 mm under it
+THICK = 1.6         # mm: top (1.0) and bottom (0.6) shells only, no sparse infill (see calibjobs LABEL_PLATE); 1.1 mm under the label
 LABEL_STRIP = 8.0   # mm of the front edge of the top face that holds the label; the rest of the top face stays flat for reading
 TOP_LAYERS = 5
 

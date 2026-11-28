@@ -110,7 +110,7 @@ for ver in ("2.8.2", "2.9.1", "2.9.2"):
     ms = z.read("Metadata/model_settings.config").decode()
     check("fake type %s: per-object wall_loops 3, 4, 5 in the object config" % ver,
           re.findall(r'<metadata key="wall_loops" value="(\d+)"/>', ms) == ["3", "4", "5"], re.findall(r'wall_loops" value="(\d+)"', ms))
-    check("fake type %s: the labels are negative parts (3)" % ver, ms.count('subtype="negative_part"') == 3, ms.count('subtype="negative_part"'))
+    check("fake type %s: the labels are negative parts, with a void under each (3 + 3)" % ver, ms.count('subtype="negative_part"') == 6, ms.count('subtype="negative_part"'))
     check("fake type %s: height ranges written (3 objects)" % ver, z.read("Metadata/layer_config_ranges.xml").decode().count("<object ") == 3)
     gc = z.read("Metadata/custom_gcode_per_layer.xml").decode()
     check("fake type %s: layer G-code at the layer top (1.6 mm for 0.2 mm layers)" % ver, "fake calibration mark" in gc and 'top_z="1.6' in gc, gc[:300])

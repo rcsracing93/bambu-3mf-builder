@@ -30,6 +30,28 @@ GAP = 5.0                  # mm between calibration objects
 PLACE_CLEARANCE = 1.0      # mm: rows start this far behind the front margin, so float rounding of a size never lands under it
 # label characters: 7-segment digits, the decimal point and the minus sign. Size in mm.
 CHAR_W, CHAR_H, STROKE, CHAR_GAP, DOT_W = 2.4, 3.6, 0.6, 0.7, 0.6
+# Under each label a void (a negative part) turns the face into a solid plate LABEL_PLATE thick over air. Without it the thin solid
+# bands around the engraved strokes lie over sparse infill (type "internal" even at 100% density, PrintObject.cpp 2.9.2 :2901), and
+# Studio fills them with its floating-concentric filler (Fill.cpp :584-597; narrow = under 6 mm, :19, :184). The Linux build of
+# Studio 2.9.2 then logs "ZFiller: encounter idx from clip" (FillFloatingConcentric.cpp :487), and merge_lines keeps only the first
+# merged path (:356-362), so a piece of that fill can be lost. Over a void the plate is top and bottom shells only, with no sparse infill.
+LABEL_PLATE = 1.5          # mm: the 0.5 mm cut and the 1.0 mm floor; top shells (1.0) and bottom shells (0.6) make it solid
+VOID_FLOOR = 0.8           # mm of solid material left under the void
+VOID_INSET = 1.0           # mm of wall left around the void, inside the face rectangle
+VOID_MIN = 0.4             # mm: a smaller void is not made (the face is thin enough to be solid shells only)
+
+
+def label_void(face):
+    """The negative-part Mesh of the void under a label face, or None when the face is too thin or too small for one."""
+    if face is None:
+        return None
+    x0, x1, y0, y1, ztop, thick = face
+    zb, zt = round(ztop - thick + VOID_FLOOR, 6), round(ztop - LABEL_PLATE, 6)
+    if zt - zb < VOID_MIN or (x1 - x0) - 2 * VOID_INSET < 2 * VOID_MIN or (y1 - y0) - 2 * VOID_INSET < 2 * VOID_MIN:
+        return None
+    sh = _Shells("Label void")
+    sh.box(round(x0 + VOID_INSET, 6), round(x1 - VOID_INSET, 6), round(y0 + VOID_INSET, 6), round(y1 - VOID_INSET, 6), zb, zt)
+    return sh.mesh.finish()
 SEG_EXT = 0.15
 
 
@@ -127,6 +149,11 @@ class Ctx:
         for i, m in enumerate(labels, 1):
             parts.append({"name": m.name or "Label %d" % i, "mesh": "calib_%s_%d_label_%d" % (self.type, len(self.objects) + 1, i),
                           "mesh_obj": m, "filament": 1, "type": "negative_part", "units": "mm", "settings": {}})
+        for i, m in enumerate(labels, 1):
+            v = label_void(getattr(m, "face", None))
+            if v is not None:
+                parts.append({"name": "Label %d void" % i, "mesh": "calib_%s_%d_void_%d" % (self.type, len(self.objects) + 1, i),
+                              "mesh_obj": v, "filament": 1, "type": "negative_part", "units": "mm", "settings": {}})
         rng = []
         for r in height_ranges or []:
             st = self.settings(dict(r.get("settings") or {}), "%s height range" % name)
@@ -185,7 +212,9 @@ def label_part(text, face, name=None):
         for (ax, bx, ay, by) in _char_boxes(ch, x, yc):
             sh.box(round(ax, 6), round(bx, 6), round(ay, 6), round(by, 6), zb, zt)
         x += (DOT_W if ch == "." else CHAR_W) + CHAR_GAP
-    return sh.mesh.finish()
+    m = sh.mesh.finish()
+    m.face = face                                           # add_object puts a solid-infill modifier under the face (see LABEL_SOLID)
+    return m
 
 
 def _char_boxes(ch, x0, yc):

@@ -75,7 +75,7 @@ j = load_job(job_file('ratios = [0.95, 1.05]'))
 labels = [p["mesh_obj"] for o in j.objects for p in o["parts"] if p["type"] == "negative_part"]
 check("labels: 2 objects, 2 label meshes", len(j.objects) == 2 and len(labels) == 2)
 check("labels: closed manifold shells", all(m.edge_report() == (0, 0, 0) for m in labels))
-check("labels: 0.5 mm deep (bottom at z 2.5 on a 3.0 mm pad, 2.5 mm of material under it)", all(abs(m.bbox()[0][2] - 2.5) < 1e-9 for m in labels), [m.bbox() for m in labels])
+check("labels: 0.5 mm deep (bottom at z 1.1 on a 1.6 mm pad, 1.1 mm of material under it)", all(abs(m.bbox()[0][2] - 1.1) < 1e-9 for m in labels), [m.bbox() for m in labels])
 check("labels: on the front strip, inside the pad", all(m.bbox()[0][1] >= -14.0 + 0.8 - 1e-9 and m.bbox()[1][1] <= -14.0 + 8.0 + 1e-9 for m in labels), [m.bbox() for m in labels])
 check("placement: 15 mm from the front, out of the exclude area",
       not cj.check_placement([tuple(o["position"]) for o in j.objects], [(28.0, 28.0)] * 2, (0, 0, 256, 256), [(0, 0, 18, 28)]))

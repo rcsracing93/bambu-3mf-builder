@@ -64,7 +64,7 @@ for ver in ("2.8.2", "2.9.1", "2.9.2"):
     names = re.findall(r'<metadata key="name" value="(Flow [0-9.]+)"/>', ms)
     check("%s: one label per band, text = the flow (Flow 10 ... Flow 30), %d measured" % (ver, len(names)),
           names == ["Flow %d" % (10 + 2 * i) for i in range(11)], names)
-    check("%s: the labels are negative parts" % ver, ms.count('subtype="negative_part"') == 11, ms.count('subtype="negative_part"'))
+    check("%s: the labels are negative parts, with a void under each (22)" % ver, ms.count('subtype="negative_part"') == 22, ms.count('subtype="negative_part"'))
     ps = z.read("Metadata/project_settings.config").decode()
     fmax = re.search(r'"filament_max_volumetric_speed": \[\s*"([0-9.]+)"', ps)
     check("%s: filament_max_volumetric_speed above the top band (30)" % ver, fmax is not None and float(fmax.group(1)) > 30, fmax and fmax.group(1))
@@ -75,7 +75,7 @@ for ver in ("2.8.2", "2.9.1", "2.9.2"):
 j, _ = load(job_text(""))
 ent = j.objects[0]
 body = ent["parts"][0]["mesh_obj"]
-labs = [p["mesh_obj"] for p in ent["parts"][1:]]
+labs = [p["mesh_obj"] for p in ent["parts"][1:] if not p["name"].endswith(" void")]       # the voids under the labels are not labels
 tops = sorted(round(m.bbox()[1][2] - 0.3, 3) for m in labs)           # the cut reaches 0.3 mm above its face
 check("labels sit on the tab tops at 5, 10 ... 55 mm (11 measured)", tops == [5.0 * (i + 1) for i in range(11)], tops)
 check("every label cut is 0.5 mm deep", all(abs(m.bbox()[1][2] - m.bbox()[0][2] - 0.8) < 1e-6 for m in labs))

@@ -193,6 +193,26 @@ def content_checks(name, jobfile, gcodes, f3mf=None):
         res = brim_check.checks(raw, f3mf, gcodes)
         out += [("brim: %s" % n, ok, d) for n, ok, d in res] or [("brim", False, "measured nothing (NOT CHECKED)")]
     cal = raw.get("calibration")
+    if isinstance(cal, dict) and f3mf and gcodes:
+        # The Linux build of Studio 2.9.2 logged "ZFiller: encounter idx from clip" in the floating-concentric fill around engraved
+        # labels (CI run #17); the macOS build takes the same filler without the log line. Measurable here: no "Floating vertical
+        # shell" block in the label layers (from 1.5 mm under a label face to the face), see calibjobs LABEL_PLATE.
+        job = jobmod.load_job(jobfile)
+        bands = []
+        for o in job.objects:
+            for p in o["parts"]:
+                if p["type"] == "negative_part" and not p["name"].endswith(" void"):     # every other negative part is a label
+                    top = round(p["mesh_obj"].bbox()[1][2] - 0.3, 4)          # the cut reaches 0.3 mm above the face
+                    bands.append((top - 1.5 - 1e-6, top + 1e-6))
+        hits, zc = [], 0.0
+        for g in gcodes:
+            for line in open(g, encoding="utf-8", errors="replace"):
+                if line.startswith("; Z_HEIGHT:"):
+                    zc = float(line.split(":")[1])
+                elif line.startswith("; FEATURE: Floating vertical shell") and any(a <= zc <= b for a, b in bands):
+                    hits.append(round(zc, 2))
+        out.append(("label layers without floating-concentric fill", bool(bands) and not hits,
+                    "%d labels measured; floating blocks at label layers: %s" % (len(bands), sorted(set(hits)) or "none")))
     if isinstance(cal, dict) and f3mf:
         # [calibration] jobs: tests/calib_check_<type>.py checks(raw, f3mf, gcodes) -> [(name, ok, detail)]; a missing module is a FAIL
         t = cal.get("type")

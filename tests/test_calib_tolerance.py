@@ -73,8 +73,10 @@ check("peg is 10 x 10 mm and 6 mm above the flange; hole block is 6 mm thick", a
       and abs(objs["Hole 0.2"]["parts"][0]["mesh_obj"].bbox()[1][2] - 6) < 1e-6)
 check("labels: 5 clearances x 2 objects, name and stroke count match the text (5 pairs)", n_lab_ok == 5, n_lab_ok)
 lo, hi = objs["Hole 0.15"]["parts"][1]["mesh_obj"].bbox()
-check("label width = label_size of the text, 0.5 mm engraved below the top face at z 6", abs((hi[0] - lo[0]) - calibjobs.label_size("0.15")[0]) < 1e-6 and abs(lo[2] - 5.5) < 1e-6, (lo, hi))
-check("a hole mesh has four strips around the hole (a real hole, not a negative part)", len(cc.shells(objs["Hole 0.1"]["parts"][0]["mesh_obj"])) == 4)
+check("label width = label_size of the text, 0.5 mm engraved into the 1.6 mm ledge (bottom at z 1.1)", abs((hi[0] - lo[0]) - calibjobs.label_size("0.15")[0]) < 1e-6 and abs(lo[2] - 1.1) < 1e-6, (lo, hi))
+hs = cc.shells(objs["Hole 0.1"]["parts"][0]["mesh_obj"])
+check("a hole mesh has four full-height strips around the hole (a real hole, not a negative part) and a 1.6 mm label ledge",
+      len(hs) == 5 and sum(1 for b in hs if abs(b[1][2] - 6) < 1e-6) == 4 and sum(1 for b in hs if abs(b[1][2] - 1.6) < 1e-6) == 1, [b[1][2] for b in hs])
 
 # ---- other keys -------------------------------------------------------------------------------------------
 j2, err = load('clearances = [0.05, 0.125, 0.4]\nsize = 8\ndepth = 4')

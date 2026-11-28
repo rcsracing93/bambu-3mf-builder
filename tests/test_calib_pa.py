@@ -65,10 +65,13 @@ for ver in ("2.8.2", "2.9.1", "2.9.2"):
     check("%s: one M900 K step per band at the first layer top of the band (7 steps)" % ver, len(st) == 7 and st == want, st)
     z = zipfile.ZipFile(out)
     ms = z.read("Metadata/model_settings.config").decode()
-    check("%s: 7 labels, all negative parts; 1 normal part" % ver, ms.count('subtype="negative_part"') == 7 and ms.count('subtype="normal_part"') == 1,
+    # two objects (the tower with 0% infill, the label stairs with normal infill); 7 labels and 7 voids under them (negative parts)
+    check("%s: 14 negative parts (7 labels, 7 voids); 2 normal parts (tower, stairs)" % ver, ms.count('subtype="negative_part"') == 14 and ms.count('subtype="normal_part"') == 2,
           (ms.count('subtype="negative_part"'), ms.count('subtype="normal_part"')))
     names = re.findall(r'<metadata key="name" value="(Label [^"]*)"', ms)
-    check("%s: labels read 0, 0.01 ... 0.06" % ver, names == ["Label 0"] + ["Label 0.0%d" % i for i in range(1, 7)], names)
+    check("%s: labels read 0, 0.01 ... 0.06" % ver, [n for n in names if not n.endswith(" void")] == ["Label 0"] + ["Label 0.0%d" % i for i in range(1, 7)], names)
+    check("%s: one void per label" % ver, len([n for n in names if n.endswith(" void")]) == 7, names)
+    check("%s: 0%% infill on the tower object only" % ver, len(re.findall(r'<metadata key="sparse_infill_density" value="0%"/>', ms)) == 1)
     ps = z.read("Metadata/project_settings.config").decode()
     check("%s: outer wall speed 200 and cooling slowdown off are in the file" % ver,
           '"outer_wall_speed": [\n        "200"' in ps.replace("\r", "") or re.search(r'"outer_wall_speed":\s*\[?\s*"200"', ps) is not None, re.findall(r'"outer_wall_speed"[^,]*', ps)[:1])
@@ -76,7 +79,7 @@ for ver in ("2.8.2", "2.9.1", "2.9.2"):
     # placement: object inside the bed, 15 mm from the front, outside X 0-18 / Y 0-28
     m3 = z.read("3D/3dmodel.model").decode()
     pos = [tuple(float(x) for x in t.split()[9:11]) for t in re.findall(r'<item objectid="\d+"[^>]* transform="([^"]+)"', m3)]
-    check("%s: placed once, inside the bed (%d object)" % (ver, len(pos)), len(pos) == 1 and 0 < pos[0][0] < 256 and 0 < pos[0][1] < 256, pos)
+    check("%s: two objects placed, inside the bed (%d objects)" % (ver, len(pos)), len(pos) == 2 and all(0 < x < 256 and 0 < y < 256 for x, y in pos), pos)
 
 # ---- the G-code check module: its expected list matches the job file -----------------------------------------------------
 cal = {"start": 0.0, "end": 0.06, "step": 0.01}
