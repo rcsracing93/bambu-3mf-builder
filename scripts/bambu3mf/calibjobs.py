@@ -27,6 +27,7 @@ LABEL_MIN_FLOOR = 1.0      # mm of solid material left under a label cut
 FACE_MARGIN = 0.8          # mm, least bare face around a label
 FRONT_MARGIN = 15.0        # mm from the front edge of the bed (nozzle load line)
 GAP = 5.0                  # mm between calibration objects
+PLACE_CLEARANCE = 1.0      # mm: rows start this far behind the front margin, so float rounding of a size never lands under it
 # label characters: 7-segment digits, the decimal point and the minus sign. Size in mm.
 CHAR_W, CHAR_H, STROKE, CHAR_GAP, DOT_W = 2.4, 3.6, 0.6, 0.7, 0.6
 SEG_EXT = 0.15
@@ -226,7 +227,7 @@ def place(sizes, bed, excludes, front=FRONT_MARGIN, gap=GAP):
     each row skipping the exclude rects. Raises CalibrationError when they do not fit."""
     x0, y0, x1, y1 = bed
     out = []
-    y = y0 + front
+    y = y0 + front + PLACE_CLEARANCE                        # not exactly on the limit: rounding of an object's size must not cross it
     x = x0 + gap
     rowd = 0.0
     for w, d in sizes:
