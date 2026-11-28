@@ -189,6 +189,38 @@ For a tower that survives removal from the plate, use at least 3 walls and 15% i
 The body is one normal part; every number is a negative part. All parts are closed manifold meshes. The tower prints in about 25 minutes at 0.2 mm
 (layer-cooling slowdown is part of that; a temperature test needs it).
 
+## `[calibration]` (calibration prints: flow, pressure advance, max volumetric speed, tolerance)
+
+`[calibration]` with `type = "flow"`, `"pa"`, `"mvs"` or `"tolerance"` makes a calibration print. The builder makes the objects. The
+result is a normal Studio project: plain objects, per-object settings, height ranges and layer G-code. It builds for every supported
+Studio version.
+
+Rules for every type:
+
+- The job has one `[[filament]]` table and no `[[object]]` tables. `[calibration]` and `[temperature_tower]` cannot be in one job.
+- Each object carries its value as an engraved label: 0.5 mm deep marks on a flat top face (digits, `.` and `-`). A label never cuts
+  a load-bearing section: it leaves at least 1.0 mm of solid material under the cut.
+- Placement: every object stays outside the printer's `bed_exclude_area` (on the P1S X 0-18, Y 0-28) and at least 15 mm from the
+  front edge, clear of the nozzle load line the start G-code draws there.
+- Settings the type writes are checked like the settings you write (names, types, ranges).
+- `[settings]` and `[[filament]]` settings still apply; a key the type sets wins over the same key in `[settings]`.
+
+### `type = "flow"`
+
+Not built yet.
+
+### `type = "pa"`
+
+Not built yet.
+
+### `type = "mvs"`
+
+Not built yet.
+
+### `type = "tolerance"`
+
+Not built yet.
+
 ## Settings
 
 Use Studio's own setting names (`wall_loops`, `sparse_infill_density`, `outer_wall_speed`, `nozzle_temperature`). The builder:

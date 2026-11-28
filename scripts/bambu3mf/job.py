@@ -15,6 +15,7 @@ def _vt3(v):
 from .serialize import normalize
 from . import studio_detect
 from . import calibration
+from . import calibjobs
 from . import versions
 
 try:
@@ -25,7 +26,7 @@ except ImportError:                      # Python 3.8-3.10: vendored tomli 2.0.1
 STUDIO_ALIASES = {"2.8.2": "2.8.2.61", "2.8.2.61": "2.8.2.61", "2.9.1": "2.9.1.70", "2.9.1.70": "2.9.1.70",
                   "2.9.2": "2.9.2.62", "2.9.2.62": "2.9.2.62"}
 TOP_KEYS = {"studio", "output", "title", "printer", "process", "plate_type", "settings", "filament", "object",
-            "layer_gcode", "temperature_tower", "purge", "allow_large", "strict_version"}
+            "layer_gcode", "temperature_tower", "purge", "allow_large", "strict_version", "calibration"}
 BAD_NAME_CHARS = '<>:/\\?*"|'          # Studio drops such names (validator rule R31)
 FILAMENT_KEYS = {"preset", "color", "settings"}
 OBJECT_KEYS = {"name", "plate", "position", "settings", "part", "copies", "height_range"}
@@ -578,7 +579,14 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
     objs = raw.get("object")
     tw_raw = raw.get("temperature_tower")
     calib = isinstance(tw_raw, dict) and tw_raw.get("shape") == "calibration"
-    if calib:
+    cal_raw = raw.get("calibration")
+    if cal_raw is not None:
+        if objs:
+            chk.err("object", "[calibration] makes its own objects. Remove the [[object]] tables.")
+        if tw_raw is not None:
+            chk.err("temperature_tower", "[calibration] and [temperature_tower] cannot be in one job")
+        objs = []
+    elif calib:
         if objs:
             chk.err("object", "[temperature_tower] shape = \"calibration\" makes its own object. Remove the [[object]] tables.")
         objs = []
@@ -695,6 +703,9 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
                     job.layer_gcode.append({"plate": int(tw.get("plate", 1)),
                                             "z": round(float(tw["first_z"]) + n * float(tw["step_height"]), 4),
                                             "kind": "temperature", "value": int(tw["start"]) + n * int(tw["step"]), "tower": True})
+    job.calib_job = None
+    if cal_raw is not None and tw_raw is None:
+        calibjobs.run(cal_raw, job, ps, by, chk, ver, _settings_table, nfil)
     for g in job.layer_gcode:
         if g["kind"] == "temperature":
             nt = by["nozzle_temperature"]
