@@ -106,6 +106,8 @@ mesh = "cube.stl"
 filament = 1
 ```
 
+To see which keys of a job OrcaSlicer would drop or rename when it opens the file, run `python3 scripts/build_bambu_3mf.py job.toml --orca-lint`. It writes nothing ([Orca lint](references/job-format.md#orca-lint---orca-lint)).
+
 Every key is in [references/job-format.md](references/job-format.md). Twelve working jobs with a gallery are in
 [docs/examples.md](docs/examples.md). The validator rules are in [references/rules.md](references/rules.md).
 

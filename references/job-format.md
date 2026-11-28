@@ -449,6 +449,29 @@ Not lint rules:
 - **Abrasive filament on a soft nozzle:** the filament has `required_nozzle_HRC`, but no printer preset has a nozzle type. Studio reads the nozzle from the connected printer, so there is nothing to compare.
 - **Enclosure needed on an open printer:** Studio's own warning reads the connected printer's chamber and door. The preset-side check is the chamber temperature rule above.
 
+## Orca lint (`--orca-lint`)
+
+OrcaSlicer can open a Bambu Studio 3MF. It does not read every key. `--orca-lint` lists the keys of your job that Orca drops or changes:
+
+```
+python3 scripts/build_bambu_3mf.py job.toml --orca-lint
+```
+
+It loads the job and prints the list. It writes nothing: no 3MF, no summary file. It does not build. It cannot be used with `--out`, `--slice-check` or `--studio-path`, and it does not lint a patch job. The exit code is 0 for any result. It is 1 if the job cannot be loaded.
+
+It checks every key you set in `[settings]`, `[filament.settings]`, `[object.settings]`, `[object.height_range.settings]` and `[object.part.settings]`. It skips a key that the builder adds by itself (`sparse_infill_pattern = "zig-zag"`) when your job does not set it.
+
+One line per finding. The line has the place, the key, the value, the kind and the source in the Orca code:
+
+| Kind | What Orca does | Source |
+|---|---|---|
+| dropped | The key is not an Orca option, or Orca clears it when it loads. Orca ignores it. | `PrintConfig.cpp` (`handle_legacy`, the option table), `Config.cpp` |
+| renamed | `handle_legacy` gives the key a new name. The value is kept, or changed as the line says. | `PrintConfig.cpp` line of the rename |
+| value | `handle_legacy` changes the value (for example `zig-zag` becomes `rectilinear`). | `PrintConfig.cpp` line of the change |
+| rejected | The key exists in Orca, but Orca has no such enum value. Orca uses the default of the option. | `PrintConfig.cpp` line of the option, `Config.cpp` |
+
+The last lines give the count (keys measured, findings by kind) and the Orca version. If the job sets no key, the result is `NOT CHECKED`, not a pass. The facts are for one Orca tag (now v2.5.2). They are in `scripts/bambu3mf/data/orca_keys.json`. `tests/gen_orca_keys.py <orca checkout> <tag> --commit SHA` writes the file from the Orca source, so you can rebuild it for a new tag. A key that the source does not show is not listed.
+
 ## Patch mode (`patch = "file.3mf"`)
 
 A job with `patch` changes an existing Bambu Studio project and writes a new file. The input is never touched. Geometry is never
