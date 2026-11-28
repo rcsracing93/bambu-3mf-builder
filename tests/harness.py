@@ -138,6 +138,7 @@ EMPTY_IN_GCODE_291 = {"filament_diameter_map"}
 SKIP_KEYS = {"different_settings_to_system", "inherits_group",   # preset bookkeeping, not printed
              "filament_prime_volume",       # the CLI prints Studio's 45 for a file holding 30 (sliced: T13/R37 reserve 45)
              "enable_prime_tower",          # the slicer turns it off on a plate with one filament (multi_plate)
+             "has_scarf_joint_seam",        # the slicer sets it when a scarf seam is active (PrintApply.cpp 2.9.2 :1390), whatever the file says
              "version"}
 
 
