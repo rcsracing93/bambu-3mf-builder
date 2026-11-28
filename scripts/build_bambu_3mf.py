@@ -12,6 +12,7 @@ or one id folder. Only the file of the preset the job names is read. The preset 
 With studio = "auto" and an installed Studio newer than the newest supported version, the file is built for the newest supported
 version with a warning (a newer major version also runs the slice check by itself). --strict-version (or strict_version = true in the
 job) stops instead.
+--orca-lint (alone, with the job) lists the keys of the job that OrcaSlicer would drop or change when it opens the 3MF. It writes nothing.
 A job with patch = "file.3mf" changes an existing Studio project and writes a new file (see references/job-format.md, Patch mode).
 --list prints selectable Studio preset names, one per line. process and filament need --printer to show only the ones made for it."""
 import os
@@ -102,6 +103,8 @@ def main(argv):
         return list_presets(argv[1:])
     do_check = "--slice-check" in argv
     argv = [a for a in argv if a != "--slice-check"]
+    orca_lint = "--orca-lint" in argv
+    argv = [a for a in argv if a != "--orca-lint"]
     write_md = "--no-summary" not in argv
     argv = [a for a in argv if a != "--no-summary"]
     strict_version = "--strict-version" in argv
@@ -133,6 +136,15 @@ def main(argv):
     if not argv:
         print(__doc__.strip(), file=sys.stderr)
         return 2
+    if orca_lint:
+        if do_check or studio_path or out:
+            print("--orca-lint only lints: it writes no file, so it cannot be used with --out, --slice-check or --studio-path", file=sys.stderr)
+            return 2
+        if patch_job.is_patch_job(argv[0]):
+            print("--orca-lint does not lint a patch job", file=sys.stderr)
+            return 2
+        from bambu3mf import orca_lint as _orca_lint
+        return _orca_lint.run(argv[0], user_presets=user_presets, strict_version=strict_version)
     if patch_job.is_patch_job(argv[0]):
         return main_patch(argv[0], out, do_check, studio_path, write_md)
     try:
