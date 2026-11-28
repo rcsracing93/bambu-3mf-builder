@@ -279,7 +279,33 @@ The type works for Studio 2.8.2, 2.9.1 and 2.9.2 (`print_flow_ratio` exists in a
 
 ### `type = "pa"`
 
-Not built yet.
+A pressure advance (K) tower. Example: `examples/calib_pa.toml`. At the start of each band the file has the custom G-code line
+`M900 K<value>`. You print the tower, then look at the corners of each band. The band with the sharpest corners and no bulge has
+the K to use.
+
+| Key | Meaning |
+|---|---|
+| `start`, `end`, `step` | K values, from the lower to the higher. Defaults 0, 0.06 and 0.01 (7 bands). `step` must divide the range into whole steps. |
+| `values` | A list of K values instead of `start`, `end` and `step` (2 to 12 values, any order). Do not give both. |
+| `band_height` | Height of one band in mm, 2 to 20. Default 5. |
+
+K must be from 0 to the `pressure_advance` maximum of the Studio options (2). Other values are refused. 2 to 12 bands.
+
+The object is a hollow square tower (30 mm, 0.84 mm walls, open top, no infill) and, in front of it, a stair with one step per
+band. The flat top face of step *n* is at the top of band *n*. The K value is engraved in that face. The tower walls are never cut.
+Each band starts with a layer G-code step at the first layer of the band (at `i * band_height`, snapped up to a layer top, so the
+first band has it on layer 1).
+
+The type sets these settings (they win over `[settings]`):
+
+- `wall_loops = 2`, `sparse_infill_density = 0%`: the tube is two thin walls with nothing inside.
+- `outer_wall_speed = 200`, `inner_wall_speed = 200`: fast enough that the pressure at the corners shows.
+- filament `slow_down_for_layer_cooling = 0`: a 30 mm tube is a short layer, and the cooling slowdown would take the speed away.
+
+Why the custom `M900` works: for a Bambu printer, Studio (checked on 2.9.2.62) never writes `M900` from the filament settings
+(`enable_pressure_advance`, `pressure_advance` do nothing for these printers). Studio and the P1S start G-code write no other `M900`.
+The K of a band stays until the next `M900` line. `tests/calib_check_pa.py` checks this on a real slice: one `M900 K<value>` per band
+on its first layer, and no other `M900`. Validated, not print-tested.
 
 ### `type = "mvs"`
 

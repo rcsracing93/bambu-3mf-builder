@@ -1,0 +1,19 @@
+studio  = "2.9.2"
+output  = "calib_pa.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#1F77B4"
+
+# A pressure advance tower. No [[object]] needed: the builder makes a hollow square tower and a stair with the K value of each band
+# engraved on its step. At the start of each band the file has the G-code line "M900 K<value>". Look for the band with the
+# sharpest corners and no bulge. This file is validated, not print-tested.
+[calibration]
+type = "pa"
+# K values: start / end / step (defaults: 0 to 0.06 in 0.01 steps = 7 bands), or values = [0.0, 0.02, 0.04]
+start = 0.0
+end = 0.06
+step = 0.01
+band_height = 5     # mm per band (2 to 20)
