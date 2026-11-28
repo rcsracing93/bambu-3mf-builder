@@ -174,7 +174,8 @@ def checks(raw, f3mf, gcodes):
 
 
 if __name__ == "__main__":
-    import tomllib
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
+    from bambu3mf.job import tomllib                  # tomllib, or the vendored tomli on Python 3.8-3.10
     with open(sys.argv[1], "rb") as fh:
         r = tomllib.load(fh)
     res = checks(r, sys.argv[2], sys.argv[3:])

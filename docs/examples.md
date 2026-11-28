@@ -1345,37 +1345,46 @@ Plates
 warning: lint: object Cube, filament 1 (Bambu PETG HF @BBL P1S 0.4 nozzle, PETG): PETG fuses to a tight brim; set brim_object_gap = 0.25. The gap is 0.1 mm (brim_object_gap) with brim_type = outer_only.
 ```
 
-## objects_two_colors
+## clips_two_colors
 
-Two separate objects on one plate, each in its own filament (Studio 2.9.2). Studio changes filament on every layer, so it purges: about 3 h and 51 g for two 20 mm cubes.
+Six small parts on one plate (Studio 2.9.2): three in black PETG, three in white PETG, 4 walls and gyroid 20% for all, written as changed settings so Studio keeps them.
 
-Job (`examples/objects_two_colors.toml`):
+Job (`examples/clips_two_colors.toml`):
 
 ```toml
-studio  = "2.9.2"
-output  = "objects_two_colors.3mf"
-printer = "Bambu Lab P1S 0.4 nozzle"
-process = "0.20mm Standard @BBL X1C"
+studio     = "2.9.2"
+output     = "clips_two_colors.3mf"
+printer    = "Bambu Lab P1S 0.4 nozzle"
+process    = "0.20mm Standard @BBL X1C"
+plate_type = "Textured PEI Plate"       # the PETG presets have no Cool Plate temperature
 
-# Two separate objects on one plate, each in its own filament (AMS slot). Studio prints them together with a prime tower.
-[[filament]]
-preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
-color = "#C12E1F"
+# Six small parts on one plate: three in black PETG, three in white PETG. 4 walls, gyroid 20% for every part.
+# The settings are written as changed settings, so Studio keeps them when it opens the file.
+[settings]
+wall_loops = 4
+sparse_infill_pattern = "gyroid"
+sparse_infill_density = "20%"
 
 [[filament]]
-preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
-color = "#0A2989"
+preset = "Bambu PETG Basic @BBL X1C"
+color = "#111111"
+
+[[filament]]
+preset = "Bambu PETG Basic @BBL X1C"
+color = "#F2F2F2"
 
 [[object]]
-name = "Red cube"
+name = "Clip black"
+copies = 3
 [[object.part]]
-mesh = "data/cube20.stl"
+mesh = "data/slab1.stl"
 filament = 1
 
 [[object]]
-name = "Blue cube"
+name = "Clip white"
+copies = 3
 [[object.part]]
-mesh = "data/cube20.stl"
+mesh = "data/slab1.stl"
 filament = 2
 ```
 
@@ -1383,21 +1392,21 @@ Builder summary:
 
 ```
   Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
-  Plate type: Cool Plate
-  Walls 2, infill 15% rectilinear, layer 0.2 mm
+  Plate type: Textured PEI Plate
+  Walls 4, infill 20% gyroid, layer 0.2 mm
 
 Filaments
-  1  #C12E1F  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
-  2  #0A2989  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+  1  #111111  Bambu PETG Basic @BBL X1C  nozzle 255 C  flow 0.95
+  2  #F2F2F2  Bambu PETG Basic @BBL X1C  nozzle 255 C  flow 0.95
 
 Plates
-  plate 1: Red cube x1, 20 x 20 x 20 mm; Part 1 (filament 1)
-  plate 1: Blue cube x1, 20 x 20 x 20 mm; Part 1 (filament 2)
+  plate 1: Clip black x3, 20 x 20 x 2.4 mm; Part 1 (filament 1)
+  plate 1: Clip white x3, 20 x 20 x 2.4 mm; Part 1 (filament 2)
 
 Purge per color change, grams (from filament in the row to filament in the column; approximate)
              1       2
-    1        -    0.27
-    2     0.50       -
-  Wipe tower: x 165, y 220.697 (plate 1)
-  Largest single purge 0.50 g. Mode: auto
+    1        -    0.72
+    2     0.17       -
+  Wipe tower: x 165, y 216.972 (plate 1)
+  Largest single purge 0.72 g. Mode: auto
 ```

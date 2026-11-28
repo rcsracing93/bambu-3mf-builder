@@ -152,7 +152,7 @@ try:
         recipes.RECIPES.update(saved)
 
     # 4. the example, and the check module on it (the G-code half runs in tests/forward_check.py)
-    import tomllib
+    from bambu3mf.job import tomllib                  # tomllib, or the vendored tomli on Python 3.8-3.10
     ex = os.path.join(ROOT, "examples", "recipe_visible_face.toml")
     s = package.build(load_job(ex), os.path.join(tmp, "ex.3mf"))
     raw = tomllib.load(open(ex, "rb"))

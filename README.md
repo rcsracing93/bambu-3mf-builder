@@ -7,19 +7,20 @@ file (`--slice-check`). It can also check any Bambu 3MF against rules taken from
 
 ## Examples
 
-Each row works today. The file in the last column builds that project (or tests it).
+No painting, no clicking through settings, no more forgetting to switch away from grid infill.
 
-| What you ask Claude | What you get | Example |
+| What you ask Claude | What you get | Example or test |
 |---|---|---|
-| "Print this keychain in four colors: base.stl black, ring.stl white, text.stl red, logo.stl blue." | One object with one part per color, each part on its own AMS slot. No painting. | `examples/colors_4.toml` |
-| "Make sign.stl white, with the text from text.stl as a red inlay." | A body part and an inlay part in two filaments, in one object. | `examples/inlay_no_penetration.toml` |
-| "Put a red cube and a blue cube on one plate." | Two objects on one plate, each in its own filament. Studio changes filament on every layer, so it purges (time and filament). | `examples/objects_two_colors.toml` |
-| "Print two copies of part.stl: one with 5 walls and 40% infill, one with 2 walls and 5%." | Settings per object, written so that Studio keeps them when it opens the file. | `examples/per_object_settings.toml` |
-| "Make a temperature tower for Bambu PLA Basic." | A ready-made tower with the temperature cut into each band, and the temperature change at each band. | `examples/calibration_tower.toml` |
-| "Make a flow calibration, a pressure advance tower, a max volumetric speed test and a tolerance test." (new in 1.3.0) | Calibration prints with each value engraved on the part: flow ratio per pad, `M900 K` per band, a speed per band, and peg and hole clearances. | `examples/calib_flow.toml`, `examples/calib_pa.toml`, `examples/calib_mvs.toml`, `examples/calib_tolerance.toml` |
-| "Pause at 10 mm so I can drop in magnets." | A pause at the layer for 10 mm. | `examples/pause.toml` |
-| "Use 0.12 mm layers for the bottom 2 mm and 0.08 mm with 4 walls for the top 3 mm." | Height ranges: fine layers where you ask, normal layers elsewhere. | `examples/height_ranges.toml` |
-| "Take my file bracket.3mf and change filament 2 to white PETG Basic." | Patch mode: it changes your own Studio file and keeps everything else as it was (the geometry byte for byte). | `tests/test_patch_core.py` |
+| "Print keychain.stl in black with the logo.stl inlay in red on my P1S with AMS." | One object, two parts, each on its own AMS slot. It opens ready to slice, with no painting. | `examples/inlay_no_penetration.toml` |
+| "Take my bracket.3mf and change it to PETG-CF, 5 walls, Engineering Plate." | Your file back with only those changes. Everything else stays byte-identical (patch mode). | `tests/test_readme_examples.py` |
+| "Make a 4-color sign: base white, border black, text blue, icon orange. Here are the 4 STLs." | 4 parts on 4 AMS slots, with the purge volumes and the prime tower set. | `examples/colors_4.toml` |
+| "Put these 6 clips on one plate: 3 in PETG black, 3 in PETG white, 4 walls, gyroid 20%." | 6 objects, a color each, with the settings stored as changed settings so that Studio keeps them. | `examples/clips_two_colors.toml` |
+| "Make a flow, PA and max-speed calibration set for my new spool." | Real Studio projects: flow pads, a PA tower with `M900 K` per band, and a speed tower labelled in mm3/s. | `examples/calib_flow.toml`, `examples/calib_pa.toml`, `examples/calib_mvs.toml` |
+| "Design a phone holder for a 20 mm rail in OpenSCAD and make it print-ready for my P1S." | Claude writes the model, exports it as STL, then builds the project from it. | `examples/single_p1s.toml` |
+
+Also: pauses at a height, temperature towers, height ranges, modifier parts, multi-plate, recipes, your own saved presets. See Use.
+
+Works for the Bambu printers in Studio's profiles (P1S, P1P, X1C, A1 and others). Each build can test-slice in your Studio and report grams and print time.
 
 More prompts and what to give Claude: [docs/using-in-claude.md](docs/using-in-claude.md). All examples with pictures: [docs/examples.md](docs/examples.md).
 

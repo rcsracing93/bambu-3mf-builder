@@ -93,7 +93,7 @@ def checks(raw, f3mf, gcodes):
 
 
 if __name__ == "__main__":
-    import tomllib
+    from bambu3mf.job import tomllib                  # tomllib, or the vendored tomli on Python 3.8-3.10
     with open(sys.argv[1], "rb") as fh:
         raw = tomllib.load(fh)
     bad = 0

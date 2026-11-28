@@ -115,6 +115,19 @@ def checks_292(raw, f3mf, gcodes):
     cfg = json.loads(z.read("Metadata/project_settings.config"))
     blk = harness.config_block(gcodes[0]) if gcodes else {}
     st = raw.get("settings") or {}
+    for k in ("wall_loops", "sparse_infill_pattern", "sparse_infill_density"):     # job settings that must reach the G-code
+        if k in st:
+            want, got = str(st[k]), str(blk.get(k))
+            out.append(("setting %s" % k, got == want, "job %s, G-code %s" % (want, got)))
+    per_plate = {}
+    for o in raw.get("object") or []:
+        per_plate[int(o.get("plate", 1))] = per_plate.get(int(o.get("plate", 1)), 0) + int(o.get("copies", 1))
+    for g in gcodes:
+        k = int(re.search(r"plate_(\d+)\.gcode$", g).group(1))
+        if per_plate.get(k, 0) > 1:                       # Studio labels objects only on a plate with more than one
+            with open(g, encoding="utf-8", errors="replace") as fh:
+                labels = {l.strip() for l in fh if l.startswith("; start printing object, unique label id:")}
+            out.append(("objects plate %d" % k, len(labels) == per_plate[k], "job %d instances, G-code %d printed objects" % (per_plate[k], len(labels))))
     for k in ("seam_headroom", "seam_embedded_headroom"):
         if k in st:
             want = _num(st[k])
