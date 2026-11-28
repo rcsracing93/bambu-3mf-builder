@@ -1253,3 +1253,47 @@ Calibration print: tolerance, 10 objects
   depth: 6
   size: 10
 ```
+
+## recipe_visible_face
+
+The `visible-face` recipe (Studio 2.9.2): eight process settings for the best look on visible faces, with one of them (wall order) overridden by the job. See references/job-format.md, "Recipes". Validated, not print-tested.
+
+Job (`examples/recipe_visible_face.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "recipe_visible_face.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+# One recipe sets eight process settings for the best look on visible faces (see references/job-format.md, "Recipes").
+recipe = "visible-face"
+
+# A key in [settings] wins over the recipe: this job keeps Arachne but asks for the "outer wall/inner wall" order.
+[settings]
+wall_sequence = "outer wall/inner wall"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#2060C0"
+
+[[object]]
+name = "Block"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #2060C0  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Block x1, 20 x 20 x 20 mm; Part 1 (filament 1)
+```

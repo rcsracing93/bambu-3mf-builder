@@ -17,6 +17,7 @@ problem with its key name, and builds nothing until the file is clean.
 | `allow_large` | no | `true` lets a build go on above 10 million triangles in total (default `false`). Use it only after the user agreed. |
 | `purge` | no | `"auto"` (default: Studio's color-based purge volumes) or `"default"` (140 + 140 mm3 for every pair), or a table of hand-set volumes, e.g. `{ "1>2" = 450, "2>1" = 300 }` (see "Manual purge matrix" below). |
 | `settings` | no | Table of Studio process settings, applied to the whole project. |
+| `recipe` | no | A recipe name (or a list of names) that sets a group of process settings. Keys in `[settings]` win. See "Recipes" below. |
 | `ledger` | no | Path of a calibration ledger, used by `[[filament]]` tables that have `spool` (see "Calibration ledger"). |
 
 List real preset names with `python3 scripts/build_bambu_3mf.py --list printer|process|filament [--printer NAME] [--studio V] [--match text]`.
@@ -386,6 +387,62 @@ Per-object overrides of per-extruder (variant) print keys are not supported in v
 `seam_headroom` (Studio's `seam_embedded_headroom`, mm, 0 to 100) needs Studio 2.9.2 or newer. It is an object setting: use it in `[settings]`
 or `[object.settings]`. The builder refuses it on a part and in a height range. Without it, the preset value applies (10 for the P1S
 presets). See [multicolor.md](multicolor.md).
+
+## Recipes
+
+`recipe = "name"` sets a named group of process settings in one line. A list works too: `recipe = ["visible-face", "strong"]`.
+
+- A key in your `[settings]` always wins over the recipe. Per-object and per-part settings are not touched.
+- The recipe values go through the same checks as your own settings.
+- A recipe is refused when Studio (the version of the job) lacks one of its keys, or does not accept one of its values. The message names the key and the Studio version it needs.
+- An unknown name is refused, and the message lists the recipes.
+- Two recipes in a list that set one key to two values are refused. Set that key in `[settings]` to choose.
+- A value that equals the preset's value is not a change, so it is not in `different_settings_to_system`. It is still in the project settings.
+- Nothing here is print-tested. The values are choices, not measurements.
+
+### `visible-face`
+
+Best look on faces people see. Needs Studio 2.9.1 or newer (`sub_top_surface_pattern` and the spiral ironing pattern are new in 2.9.1).
+
+| Key | Value | Why |
+|---|---|---|
+| `wall_generator` | `"arachne"` | Variable-width walls fill thin features without gaps. The Bambu presets use `classic`. |
+| `wall_sequence` | `"inner-outer-inner wall"` | The outer wall is printed between two inner walls, so it has a printed wall on both sides. This is a common choice for a clean outer face. Studio (PerimeterGenerator.cpp) needs at least 3 walls for this order. With 2 walls, as in the 0.20 mm Standard preset, the order stays inner then outer. Set `wall_loops = 3` in `[settings]` to use it. |
+| `override_filament_scarf_seam_setting` | `true` | Studio reads the process scarf seam keys only when this is on (GCode.cpp). Otherwise it uses the filament preset. |
+| `seam_slope_type` | `"external"` | A scarf seam on the outer contour (Studio calls it "Contour"). It hides the seam. |
+| `top_surface_pattern` | `"monotonic"` | Every line of a top region runs in one direction, so the light falls evenly. The presets use `monotonicline`. |
+| `sub_top_surface_pattern` | `"monotonic"` | The solid layer under a top surface can print through. Studio's tooltip says a monotonic pattern gives the smoothest result. This equals Studio's default, so it is not listed as a change. |
+| `ironing_type` | `"top"` | Irons the top surfaces. The presets use `no ironing`. |
+| `ironing_pattern` | `"ironingarchimedeanspiral"` | Spiral ironing. It leaves no straight scan lines. Studio labels it "Archimedean Chords". |
+
+Left out on purpose:
+
+- `periodic_modifier` (and its `apply` and `skip` layer counts). It belongs to a modifier part, not to a process, so a job cannot set it as a process setting.
+- `spiral_mode` (spiral vase). It prints one wall and no infill, so it is a different kind of print and not a surface setting.
+
+### `strong`
+
+A stronger part, with more material in the walls and infill.
+
+| Key | Value | Why |
+|---|---|---|
+| `wall_loops` | `4` | Walls carry most of the load. The presets use 2. |
+| `sparse_infill_pattern` | `"gyroid"` | Strong in every direction, and no infill line crosses itself. |
+| `sparse_infill_density` | `"30%"` | The presets use 15%. |
+| `bottom_shell_layers` | `5` | A thicker floor. The presets use 3. |
+
+### `fast-draft`
+
+A quick look at fit or shape. Not for a final part.
+
+| Key | Value | Why |
+|---|---|---|
+| `layer_height` | `0.28` | Thick layers. The 0.4 mm nozzle of the P1S allows up to 0.3 mm. |
+| `sparse_infill_density` | `"8%"` | Little infill. |
+| `top_shell_layers` | `4` | One layer fewer than the 0.20 mm Standard preset. |
+| `bottom_shell_layers` | `2` | One layer fewer than the preset. |
+
+The example `examples/recipe_visible_face.toml` uses `visible-face` and changes one key.
 
 ## Defaults that differ from Bambu's presets
 
