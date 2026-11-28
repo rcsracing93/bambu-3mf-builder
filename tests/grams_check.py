@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Navi check (needs a real Bambu Studio; not run by run_all). For examples/colors_4.toml and examples/multi_plate.toml:
+"""Real-Studio check, run on macOS (Apple silicon) (needs a real Bambu Studio; not run by run_all). For examples/colors_4.toml and examples/multi_plate.toml:
 build with --slice-check, slice the same 3MF again in a new empty folder, read that result.json, and compare every time,
 grams and metres value in the console and in the summary file with it (same rounding: 2 decimals; time as 1h 5m 10s).
 Metres are not in result.json, so they are compared with the G-code header "total filament length [mm]" of the second slice.

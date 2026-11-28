@@ -151,7 +151,7 @@ def _at_least(version, want):
 def compare_config(written, blk, options, n, version=None):
     """The builder's config must reach the G-code. Returns (differ, missing) lists of key names."""
     differ, missing = [], []
-    v291 = _at_least(version, (2, 9, 1))                 # the 2.9.1 behaviour below is also seen in 2.9.2 (checked on navi with Studio 2.9.2.62)
+    v291 = _at_least(version, (2, 9, 1))                 # the 2.9.1 behaviour below is also seen in 2.9.2 (checked on macOS (Apple silicon) with Studio 2.9.2.62)
     for k, v in written.items():
         if k in SKIP_KEYS or k in MISSING_OK or (v291 and k in MISSING_OK_291):
             continue

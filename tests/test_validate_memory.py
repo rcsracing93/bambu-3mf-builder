@@ -79,7 +79,7 @@ def run_child(path):
 base_rss, _r, err = run_child(SMALL)
 check("base run (a small file) measured", base_rss is not None, err)
 BIGP, unpacked = with_big_mesh(os.path.join(tmp, "big.3mf"), 1_260_000)
-# Peak RSS is noisy on macOS (the allocator; 39 to 52 MB for the same run on navi). Noise only adds memory, so the lowest of three
+# Peak RSS is noisy on macOS (the allocator; 39 to 52 MB for the same run on macOS (Apple silicon)). Noise only adds memory, so the lowest of three
 # runs is the measurement. The limit is not changed.
 runs = [run_child(BIGP) for _ in range(3)]
 rss, rules, err = min(runs, key=lambda r: r[0] if r[0] is not None else float("inf"))
