@@ -215,7 +215,43 @@ Not built yet.
 
 ### `type = "mvs"`
 
-Not built yet.
+Maximum volumetric speed. One hollow tube (80 x 36 mm for 11 bands, 55 mm high) in bands. Each band prints its outer wall faster, so
+the flow in mm3/s goes up from band to band. Each band has a tab on the front wall. The tab top is a flat face with the band's flow
+engraved on it. The walls under test are never cut. Print it, find the first band where the wall gets rough, thin or gappy, and take
+the band below it. The job is validated, not print-tested.
+
+| Key | Default | Meaning |
+| :-- | :-- | :-- |
+| `start`, `end`, `step` | 10, 30, 2 | Flow of the first band, flow of the last band, and the step, in mm3/s. 2 to 14 bands. |
+| `flows` | none | A list of flows (increasing, 2 to 14 numbers, 2 decimals at most). Use it instead of `start`, `end` and `step`. |
+| `band_height` | 5 | Height of one band in mm (2 to 20). It must be a whole number of layers. |
+
+Speed for a flow:
+
+```
+speed (mm/s) = flow (mm3/s) / (layer_height * (outer_wall_line_width - layer_height * (1 - pi/4)))
+```
+
+The bracket is Studio's line cross-section for a rounded rectangle (`Flow::mm3_per_mm`, `libslic3r/Flow.cpp` line 235-246, Studio
+2.9.2.62). An outer wall line width of 0 means 1.125 x nozzle (`Flow.cpp` line 22-35). For 0.42 mm and 0.2 mm the area is 0.0754 mm2,
+so 10 mm3/s is 132.6 mm/s and 30 mm3/s is 397.8 mm/s. The G-code feed rate is 60 x speed. The builder refuses a flow that needs more
+than the printer's axis speed limit (500 mm/s on the P1S).
+
+What the type sets, so that nothing else changes the wall speed:
+
+- `filament_max_volumetric_speed` goes to the top flow + 2 mm3/s, or higher when the preset has more. Studio caps every path at this
+  value divided by its cross-section (`GCode.cpp` `get_path_speed`, line 6555-6560).
+- `slow_down_for_layer_cooling` is off (no layer-time slowdown).
+- `enable_overhang_speed` is off. The walls are vertical, so no overhang speed would apply anyway.
+- The tube is open at the top and each layer is one long loop, so no small-perimeter slowdown applies. The real G-code of the
+  example shows one feed rate per band.
+
+The first layer prints at `initial_layer_speed` (Studio does this for every first layer), so it is not a measured layer. The layer
+height and the first layer height must be equal. Check the real speeds with `tests/calib_check_mvs.py`: it reads the feed rate of
+every `; FEATURE: Outer wall` move per band from the G-code. Accuracy: the example matches to 0.3 mm/min (0.005 mm/s).
+
+Fast bands shake the printer. At 25000 mm/min and above the corners are limited by acceleration, not by flow. Read the walls on the
+long sides.
 
 ### `type = "tolerance"`
 
