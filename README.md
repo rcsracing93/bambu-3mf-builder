@@ -11,6 +11,17 @@ taken from the published Bambu Studio source. It works as a Claude skill, and th
 
 Built for Bambu Studio **2.8.2**, **2.9.1** and **2.9.2**. The builder picks the one installed on your computer, or the newest if none is found. A newer Studio release does not stop it: the file is built for the newest supported version with a warning, and Studio opens it with all settings. Not made by or affiliated with Bambu Lab.
 
+| Studio version | Build | Validate | Patch mode | Real-slicer tests |
+|---|---|---|---|---|
+| 2.8.2.61 | yes | yes | yes | Linux CI |
+| 2.9.1.70 | yes | yes | yes | Linux CI, macOS |
+| 2.9.2.62 | yes | yes | yes | Linux CI, macOS |
+| newer 2.x | yes, for 2.9.2.62, with a warning | yes, with the 2.9.2.62 rules (unknown settings are warnings) | yes, with a warning | - |
+| newer major (3.x) | yes, for 2.9.2.62, with a stronger warning and an automatic slice check | tables skipped, with a warning | refused | - |
+
+Studio opens a project from an older 2.x release with all its settings; only a file from a higher MAJOR version opens as geometry only.
+`strict_version = true` (or `--strict-version`) stops instead of building for an older version.
+
 ## Use it in Claude
 
 Install it (below), then ask in plain words. Claude writes the job, builds, checks and hands you the 3MF and a short summary.
