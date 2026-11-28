@@ -37,10 +37,11 @@ ABOUT = {
                        "objects; the clearance is the gap per side between flat faces. Validated, not print-tested.",
     "calib_mvs": "A maximum-volumetric-speed calibration, no mesh needed: one hollow tube in 11 bands of 5 mm. The outer-wall speed rises per band so the flow goes 10, 12 ... 30 mm3/s "
                  "(132.6 to 397.8 mm/s). Each flow is engraved on a front tab. Validated, not print-tested.",
+    "petg_brim_lint": "PETG HF with an outer brim and a 0.1 mm brim gap. The builder prints a lint warning on purpose: PETG fuses to a tight brim, set `brim_object_gap = 0.25`. The warning never blocks the build.",
 }
 ORDER = ["single_p1s", "single_p1p", "single_a1", "single_x1c", "colors_2", "colors_4", "colors_8", "modifier_negative",
          "inlay_no_penetration", "seam_headroom", "multi_plate", "pause", "per_object_settings", "height_ranges", "purge_matrix",
-         "effect_plate", "ledger_spool", "temperature_tower", "calibration_tower", "calib_flow", "calib_pa", "calib_mvs", "calib_tolerance"]
+         "effect_plate", "ledger_spool", "temperature_tower", "calibration_tower", "calib_flow", "calib_pa", "calib_mvs", "calib_tolerance", "petg_brim_lint"]
 
 
 def render():

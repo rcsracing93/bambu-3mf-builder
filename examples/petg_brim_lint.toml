@@ -1,0 +1,22 @@
+studio  = "2.9.2"
+output  = "petg_brim_lint.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+plate_type = "Textured PEI Plate"
+
+# On purpose: PETG with a brim and a 0.1 mm brim gap. The builder prints a lint warning
+# ("PETG fuses to a tight brim; set brim_object_gap = 0.25"). Set the gap to 0.25 and the warning is gone.
+[settings]
+brim_type = "outer_only"
+brim_width = 5
+brim_object_gap = 0.1
+
+[[filament]]
+preset = "Bambu PETG HF @BBL P1S 0.4 nozzle"
+color = "#2E6FC1"
+
+[[object]]
+name = "Cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
