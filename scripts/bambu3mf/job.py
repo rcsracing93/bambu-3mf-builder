@@ -26,7 +26,7 @@ except ImportError:                      # Python 3.8-3.10: vendored tomli 2.0.1
 
 STUDIO_ALIASES = {"2.8.2": "2.8.2.61", "2.8.2.61": "2.8.2.61", "2.9.1": "2.9.1.70", "2.9.1.70": "2.9.1.70",
                   "2.9.2": "2.9.2.62", "2.9.2.62": "2.9.2.62"}
-TOP_KEYS = {"studio", "output", "title", "printer", "process", "plate_type", "settings", "filament", "object",
+TOP_KEYS = {"studio", "output", "title", "printer", "process", "plate_type", "settings", "recipe", "filament", "object",
             "layer_gcode", "temperature_tower", "purge", "allow_large", "strict_version", "calibration", "ledger"}
 BAD_NAME_CHARS = '<>:/\\?*"|'          # Studio drops such names (validator rule R31)
 FILAMENT_KEYS = {"preset", "color", "settings", "spool"}
@@ -502,6 +502,10 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
     # ---- process settings -----------------------------------------------------------------
     job.settings = _settings_table(raw.get("settings", {}), ("print",), by, ver, "[settings]", chk,
                                    "[settings] (process settings only; filament settings go under [filament.settings])")
+    from . import recipes                                  # recipe = "name": job [settings] win over the recipe's keys
+    job.recipes, rkeys = recipes.apply(raw.get("recipe"), job.settings, by, ver, chk, _settings_table)
+    for k, v in rkeys.items():
+        job.settings.setdefault(k, v)
     for k, v in DEFAULT_SETTINGS.items():
         if k in by and k not in job.settings:
             job.settings[k] = v
