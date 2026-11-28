@@ -17,6 +17,15 @@ def purge_table(cfg, n):
     return grams
 
 
+def _info(v):
+    """A calibration info value as short text (lists joined with ", ")."""
+    if isinstance(v, (list, tuple)):
+        return ", ".join(_info(x) for x in v)
+    if isinstance(v, float):
+        return ("%d" % v) if v == int(v) else ("%g" % v)
+    return str(v)
+
+
 def format_summary(job, s):
     cfg = s.config
     n = s.result.n
@@ -52,6 +61,12 @@ def format_summary(job, s):
         t = job.calibration["temps"]
         L.append("")
         L.append("Calibration tower: %d bands of 8 mm, %d C at the bottom down to %d C at the top" % (len(t), t[0], t[-1]))
+    cal = getattr(job, "calib_job", None)
+    if cal:
+        L.append("")
+        L.append("Calibration print: %s, %d object%s" % (cal["type"], len(cal["objects"]), "" if len(cal["objects"]) == 1 else "s"))
+        for k, v in sorted((cal.get("info") or {}).items()):
+            L.append("  %s: %s" % (k, _info(v)))
     if job.layer_gcode:
         L.append("")
         L.append("Layer G-code (%d steps)" % len(job.layer_gcode))
@@ -141,6 +156,11 @@ def format_summary_md(job, s, slice_info=None):
     if getattr(job, "calibration", None):
         t = job.calibration["temps"]
         L += ["## Calibration tower", "", "- %d bands of 8 mm: %s C, bottom to top (the first band's temperature is also the first-layer temperature)" % (len(t), ", ".join(str(x) for x in t)), ""]
+    cal = getattr(job, "calib_job", None)
+    if cal:
+        L += ["## Calibration print", "", "- Type: %s (%d object%s)" % (cal["type"], len(cal["objects"]), "" if len(cal["objects"]) == 1 else "s")]
+        L += ["- %s: %s" % (k, _info(v)) for k, v in sorted((cal.get("info") or {}).items())]
+        L += ["- Validated, not print-tested.", ""]
     L += ["## Layer G-code", ""]
     if job.layer_gcode:
         for g in sorted(job.layer_gcode, key=lambda x: (x["plate"], x["z"])):
