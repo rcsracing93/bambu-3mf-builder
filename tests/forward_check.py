@@ -14,7 +14,7 @@ Expectations come from the job FILE and the mesh files (tests/harness.py), never
 Usage: python3 tests/forward_check.py [--studio-path PATH] [--report FILE] [--only name,name] [-j N]
 -j N runs N examples at a time (default: the CPU count); the report keeps the example order.
 Exit 0 when every example passed and at least one was checked."""
-import glob, hashlib, json, os, re, shutil, subprocess, sys, tempfile, threading, time, zipfile
+import glob, hashlib, importlib, json, os, re, shutil, subprocess, sys, tempfile, threading, time, zipfile
 
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, ".."))
@@ -170,6 +170,19 @@ def content_checks(name, jobfile, gcodes, f3mf=None):
     root = os.path.dirname(os.path.abspath(jobfile))
     by_plate = {int(re.search(r"plate_(\d+)\.gcode$", g).group(1)): g for g in gcodes}
     out = checks_292(raw, f3mf, gcodes) if f3mf else []
+    cal = raw.get("calibration")
+    if isinstance(cal, dict) and f3mf:
+        # [calibration] jobs: tests/calib_check_<type>.py checks(raw, f3mf, gcodes) -> [(name, ok, detail)]; a missing module is a FAIL
+        t = cal.get("type")
+        try:
+            mod = importlib.import_module("calib_check_%s" % t)
+        except ImportError as e:
+            out.append(("calibration %s" % t, False, "no check module tests/calib_check_%s.py (%s)" % (t, e)))
+        else:
+            res = mod.checks(raw, f3mf, gcodes)
+            out += [("%s: %s" % (t, n), ok, d) for n, ok, d in res]
+            if not res:
+                out.append(("calibration %s" % t, False, "the check module measured nothing (NOT CHECKED)"))
     tw = raw.get("temperature_tower")
     if tw and tw.get("shape") != "calibration":
         want = [(tw["first_z"] + i * tw["step_height"], tw["start"] + i * tw["step"]) for i in range(int(tw["steps"]))]
