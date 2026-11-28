@@ -997,3 +997,54 @@ Layer G-code (4 steps)
   plate 1  z 26.2  temperature 215
   plate 1  z 34.2  temperature 210
 ```
+
+## calib_pa
+
+A pressure advance tower, no mesh needed: a hollow square tower of seven 5 mm bands, K 0 to 0.06 in 0.01 steps. Each band starts with a custom `M900 K<value>` line; the K value is cut into a stair step beside the tower. Studio 2.9.2, validated, not print-tested.
+
+Job (`examples/calib_pa.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "calib_pa.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#1F77B4"
+
+# A pressure advance tower. No [[object]] needed: the builder makes a hollow square tower and a stair with the K value of each band
+# engraved on its step. At the start of each band the file has the G-code line "M900 K<value>". Look for the band with the
+# sharpest corners and no bulge. This file is validated, not print-tested.
+[calibration]
+type = "pa"
+# K values: start / end / step (defaults: 0 to 0.06 in 0.01 steps = 7 bands), or values = [0.0, 0.02, 0.04]
+start = 0.0
+end = 0.06
+step = 0.01
+band_height = 5     # mm per band (2 to 20)
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 0% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #1F77B4  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: PA tower x1, 84 x 42 x 35 mm; PA tower (filament 1), Label 0 (filament 1), Label 0.01 (filament 1), Label 0.02 (filament 1), Label 0.03 (filament 1), Label 0.04 (filament 1), Label 0.05 (filament 1), Label 0.06 (filament 1)
+
+Layer G-code (7 steps)
+  plate 1  z 0.2  gcode M900 K0
+  plate 1  z 5.2  gcode M900 K0.01
+  plate 1  z 10.2  gcode M900 K0.02
+  plate 1  z 15.2  gcode M900 K0.03
+  plate 1  z 20.2  gcode M900 K0.04
+  plate 1  z 25.2  gcode M900 K0.05
+  plate 1  z 30.2  gcode M900 K0.06
+```

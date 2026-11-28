@@ -27,11 +27,13 @@ ABOUT = {
     "temperature_tower": "Temperature changes every 4 mm, 230 C down to 215 C.",
     "calibration_tower": "A ready-made calibration temperature tower, no mesh needed: five 8 mm bands from 230 C (preset 220 C + 10) down to 210 C, "
                          "each with its temperature cut into the front, a 45 and a 30 degree overhang, a 10 mm bridge and two stringing pins.",
+    "calib_pa": "A pressure advance tower, no mesh needed: a hollow square tower of seven 5 mm bands, K 0 to 0.06 in 0.01 steps. Each band starts with a "
+                "custom `M900 K<value>` line; the K value is cut into a stair step beside the tower. Studio 2.9.2, validated, not print-tested.",
     "seam_headroom": "Two colors with the embedded seam headroom set to 20 mm (the P1S presets use 10 mm). Needs Studio 2.9.2.",
 }
 ORDER = ["single_p1s", "single_p1p", "single_a1", "single_x1c", "colors_2", "colors_4", "colors_8", "modifier_negative",
          "inlay_no_penetration", "seam_headroom", "multi_plate", "pause", "per_object_settings", "height_ranges", "purge_matrix",
-         "effect_plate", "temperature_tower", "calibration_tower"]
+         "effect_plate", "temperature_tower", "calibration_tower", "calib_pa"]
 
 
 def render():
