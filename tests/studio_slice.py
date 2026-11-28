@@ -113,6 +113,7 @@ def retarget(jobfile, build_version, work):
     txt = open(jobfile).read()
     txt = re.sub(r'(?m)^studio\s*=\s*"[^"]*"', 'studio  = "%s"' % build_version, txt)
     txt = re.sub(r'mesh\s*=\s*"([^"/][^"]*)"', lambda m: 'mesh = "%s"' % os.path.join(base, m.group(1)), txt)
+    txt = re.sub(r'(?m)^ledger\s*=\s*"([^"/][^"]*)"', lambda m: 'ledger = "%s"' % os.path.join(base, m.group(1)), txt)   # relative to the job
     out = os.path.join(work, os.path.basename(jobfile))
     open(out, "w").write(txt)
     return out
@@ -134,7 +135,11 @@ def check_job(jobfile, sdir, version, work, rep, other=None, build_version=None,
         rep.add(name, "T1", False, "build failed: %s" % e)
         return
     read_mesh = meshmod.read_mesh
-    if (raw.get("temperature_tower") or {}).get("shape") == "calibration":     # the builder made the mesh: grade against the loaded job's parts
+    for i, f in enumerate(raw.get("filament", [])):
+        if "preset" not in f and i < len(job.filaments):
+            f["preset"] = job.filaments[i]["preset"]                       # a ledger spool gave the preset (spool = "...")
+    if (raw.get("temperature_tower") or {}).get("shape") == "calibration" or raw.get("calibration") is not None:
+        # the builder made the meshes (calibration tower, [calibration] jobs): grade against the loaded job's parts
         gen = {p["mesh"]: p["mesh_obj"] for o in job.objects for p in o["parts"]}
         raw["object"] = [{"name": o["name"], "plate": o["plate"], "part": [{"mesh": p["mesh"], "type": p["type"], "filament": p["filament"]} for p in o["parts"]]}
                          for o in job.objects]
