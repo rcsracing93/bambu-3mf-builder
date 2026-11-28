@@ -243,7 +243,24 @@ Not built yet.
 
 ### `type = "tolerance"`
 
-Not built yet.
+A peg and hole fit test. You find the clearance that fits your printer and filament. See `examples/calib_tolerance.toml`.
+
+| Key | Default | Range | Meaning |
+| :-- | :-- | :-- | :-- |
+| `clearances` | `[0.1, 0.15, 0.2, 0.25, 0.3]` | 1 to 8 numbers, each 0.02 to 1.0 mm, no repeats | The clearances to test |
+| `size` | `10` | 4 to 30 mm | Side of the square peg |
+| `depth` | `6` | 3 to 20 mm | Hole depth and peg height |
+
+For each clearance the builder makes two objects:
+
+- `Hole <c>`: a block `depth` thick with a square hole through it. The hole is real, not a negative part. The hole side is `size + 2 x c`.
+- `Peg <c>`: a flange 2 mm thick with a square peg of side `size` and height `depth`. It prints flange down. Push the peg into the hole of the same label.
+
+The clearance is the gap on each of the four sides between two flat faces: `(hole side - peg side) / 2`. A square has no vertices
+to round off, so the number is exact in the mesh. Each object has its clearance engraved in the top face of its front band (the 6 mm
+band at the front of the block or flange). Pegs and holes are separate objects, so you can pull them off the plate and test them.
+All meshes are closed. The file is validated, not print-tested. Slicers, printers and filaments change real clearances (flow, wall
+order, shrinkage), so the label is the designed gap, not a promise. Pick the smallest clearance that slides without force.
 
 ## Settings
 

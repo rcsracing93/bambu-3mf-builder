@@ -1,0 +1,16 @@
+studio  = "2.9.2"
+output  = "calib_tolerance.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#FF8000"
+
+# A peg / hole fit test. For each clearance the builder makes a square hole block and a square peg, each labelled with the clearance.
+# The clearance is the gap on each side: hole side = size + 2 x clearance. Pegs are separate objects, so you can push them in.
+[calibration]
+type = "tolerance"
+clearances = [0.1, 0.15, 0.2, 0.25, 0.3]   # mm, 1 to 8 values, 0.02 to 1.0
+size = 10                                   # mm, side of the peg, 4 to 30
+depth = 6                                   # mm, hole depth and peg height, 3 to 20
