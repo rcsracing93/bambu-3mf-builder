@@ -1,16 +1,40 @@
 # Changelog
 
-## 1.3.0 (unreleased)
+## 1.3.0 (2026-11-27)
+
+Everything here is validated (built, checked and sliced in a real Bambu Studio), not print-tested.
 
 ### A new Studio release never stops a build
 - With `studio = "auto"` and a Studio newer than the newest supported version, the file is built for the newest supported version with a
   warning. Studio opens an older 2.x project with all settings. A newer major version gets a stronger warning and an automatic slice check.
+  If the installed version cannot be read, the build uses the newest supported version with a warning.
   `strict_version = true` or `--strict-version` keeps the old stop.
 - Patch mode and the validator accept files from a newer 2.x, with warnings for settings they do not know.
 
 ### Bambu Studio 2.9.2
-- Supported versions: 2.8.2.61, 2.9.1.70 and 2.9.2.62. Files built for 2.8.2 and 2.9.1 are the same as in 1.2.0.
+- Supported versions: 2.8.2.61, 2.9.1.70 and 2.9.2.62. Files built for 2.8.2 and 2.9.1 are byte-identical to 1.2.0.
 - 2.9.2 rules: nozzle temperature minimum 165 °C, the 3D Effect Plate, the Engineering Plate for Bambu PLA Basic, Matte and Silk+.
+- A setting that only a newer supported version has gives "needs Studio X or newer" on an older one.
+
+### New 2.9.2 functions
+- `seam_headroom` (Studio's embedded seam headroom; an object setting).
+- `color_penetration_cross_parts`. It acts only on color painted in Studio, so it does not change jobs that use one part per color.
+- Manual purge matrix: `purge = { "1>2" = 450 }`, 0 to 900 mm3 (2.8.2, 2.9.1) or 0 to 2000 mm3 (2.9.2). Other pairs keep the automatic values.
+- `plate_type = "3D Effect Plate"` with its bed temperatures, in builds and in patch mode.
+- `--slice-check` shows the print time per plate and the grams and metres per filament, in the console and in the summary file.
+
+### Calibration prints
+- `[calibration] type = "flow"`, `"pa"`, `"mvs"` or `"tolerance"`: the builder makes the objects, with each value engraved 0.5 mm deep on
+  a top face. Flow: pads with their own flow ratio. Pressure advance: a tower with an `M900 K` line per band. Max volumetric speed: a tube
+  with a faster outer wall per band. Tolerance: square pegs and holes with labelled clearances.
+- Calibration ledger: a `calibration.toml` with your measured values per spool, and `[[filament]] spool = "name"` to use them. The values
+  become changed settings, and the summary names them.
+
+### Other
+- Setting recipes: `recipe = "visible-face"`, `"strong"` or `"fast-draft"` set a documented group of Studio settings. Your own settings win.
+- PETG brim lint: a warning when PETG prints with a brim gap under 0.2 mm.
+- `--orca-lint` lists the settings of a job that OrcaSlicer drops or renames, with the place in the Orca source. It writes nothing.
+- The README starts with what the skill does and a table of examples.
 
 ### Install
 - The README now says: the skill is not in Anthropic's plugin directory, so a search in Claude finds nothing. The marketplace commands

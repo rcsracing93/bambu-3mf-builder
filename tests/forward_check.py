@@ -170,6 +170,15 @@ def content_checks(name, jobfile, gcodes, f3mf=None):
     root = os.path.dirname(os.path.abspath(jobfile))
     by_plate = {int(re.search(r"plate_(\d+)\.gcode$", g).group(1)): g for g in gcodes}
     out = checks_292(raw, f3mf, gcodes) if f3mf else []
+    if f3mf and raw.get("recipe") is not None:
+        import recipe_check                                   # recipe keys (and job overrides) in the 3MF and the G-code config block
+        res = recipe_check.checks(raw, f3mf, gcodes)
+        out += [("recipe: %s" % n, ok, d) for n, ok, d in res] or [("recipe", False, "measured nothing (NOT CHECKED)")]
+    st_ = raw.get("settings") or {}
+    if f3mf and ("brim_object_gap" in st_ or "brim_type" in st_):
+        import brim_check                                     # brim keys in the G-code; the PETG brim lint text in the summary file
+        res = brim_check.checks(raw, f3mf, gcodes)
+        out += [("brim: %s" % n, ok, d) for n, ok, d in res] or [("brim", False, "measured nothing (NOT CHECKED)")]
     cal = raw.get("calibration")
     if isinstance(cal, dict) and f3mf:
         # [calibration] jobs: tests/calib_check_<type>.py checks(raw, f3mf, gcodes) -> [(name, ok, detail)]; a missing module is a FAIL
