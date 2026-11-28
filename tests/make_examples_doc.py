@@ -29,13 +29,14 @@ ABOUT = {
                          "each with its temperature cut into the front, a 45 and a 30 degree overhang, a 10 mm bridge and two stringing pins.",
     "calib_flow": "Flow calibration (Studio 2.9.2): five 28 mm pads with object flow ratios 0.90 to 1.10, each with its ratio engraved on the front edge. "
                   "The effective flow is the filament flow ratio times the label. Validated, not print-tested.",
+    "ledger_spool": "A spool from a calibration ledger (`examples/ledger/calibration.toml`, made-up values): its flow, pressure advance, speed and temperatures become changed filament settings (see references/job-format.md, \"Calibration ledger\").",
     "seam_headroom": "Two colors with the embedded seam headroom set to 20 mm (the P1S presets use 10 mm). Needs Studio 2.9.2.",
     "calib_tolerance": "A peg and hole fit test: five square holes and five pegs with clearances 0.1 to 0.3 mm, each labelled. The builder makes the "
                        "objects; the clearance is the gap per side between flat faces. Validated, not print-tested.",
 }
 ORDER = ["single_p1s", "single_p1p", "single_a1", "single_x1c", "colors_2", "colors_4", "colors_8", "modifier_negative",
          "inlay_no_penetration", "seam_headroom", "multi_plate", "pause", "per_object_settings", "height_ranges", "purge_matrix",
-         "effect_plate", "temperature_tower", "calibration_tower", "calib_flow", "calib_tolerance"]
+         "effect_plate", "ledger_spool", "temperature_tower", "calibration_tower", "calib_flow", "calib_tolerance"]
 
 
 def render():

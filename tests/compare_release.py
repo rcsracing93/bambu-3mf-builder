@@ -56,7 +56,7 @@ def job_copy(tree, example, studio):
     def absmesh(m):
         p = m.group(2)
         return m.group(1) + '"%s"' % (p if os.path.isabs(p) else os.path.normpath(os.path.join(src_dir, p)).replace("\\", "/"))
-    text = re.sub(r'(?m)^(\s*mesh\s*=\s*)"([^"]*)"', absmesh, text)
+    text = re.sub(r'(?m)^(\s*(?:mesh|ledger)\s*=\s*)"([^"]*)"', absmesh, text)     # a ledger path is relative to the job file too
     dst = os.path.join(tempfile.mkdtemp(dir=_copies_dir()), example)
     with open(dst, "w", encoding="utf-8") as fh:
         fh.write(text)

@@ -896,6 +896,47 @@ Plates
   plate 1: Cube x1, 20 x 20 x 20 mm; Part 1 (filament 1)
 ```
 
+## ledger_spool
+
+A spool from a calibration ledger (`examples/ledger/calibration.toml`, made-up values): its flow, pressure advance, speed and temperatures become changed filament settings (see references/job-format.md, "Calibration ledger").
+
+Job (`examples/ledger_spool.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "ledger_spool.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+plate_type = "Textured PEI Plate"
+ledger = "ledger/calibration.toml"      # without this line the builder looks for calibration.toml next to this file
+
+[[filament]]
+# preset is left out: the spool's preset is used ("Bambu PLA Basic @BBL P1S 0.4 nozzle")
+spool = "Example PLA red 1"
+color = "#C12E1F"
+
+[[object]]
+name = "Cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Textured PEI Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #C12E1F  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 212 C  flow 0.96
+     spool Example PLA red 1 (ledger calibration.toml, measured 2026-01-15): filament_flow_ratio 0.96, pressure_advance 0.04, filament_max_volumetric_speed 17.5, nozzle_temperature 212, nozzle_temperature_initial_layer 217, textured_plate_temp 57, textured_plate_temp_initial_layer 62, enable_pressure_advance 1
+
+Plates
+  plate 1: Cube x1, 20 x 20 x 20 mm; Part 1 (filament 1)
+```
+
 ## temperature_tower
 
 Temperature changes every 4 mm, 230 C down to 215 C.
