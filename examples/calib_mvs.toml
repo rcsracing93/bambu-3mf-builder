@@ -1,0 +1,17 @@
+studio  = "2.9.2"
+output  = "calib_mvs.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#2060C0"
+
+# Max volumetric speed. One hollow tube in 11 bands of 5 mm. The outer-wall speed rises band by band so that the flow goes
+# 10, 12 ... 30 mm3/s. Each flow is engraved on a tab on the front. Look for the first band where the wall gets rough or thin.
+[calibration]
+type = "mvs"
+start = 10
+end = 30
+step = 2
+band_height = 5

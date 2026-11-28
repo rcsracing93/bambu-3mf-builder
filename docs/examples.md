@@ -1081,6 +1081,57 @@ Plates
   plate 1: Flow 1.10 x1, 28 x 28 x 3 mm; Flow 1.10 (filament 1), Label 1.10 (filament 1)
 ```
 
+## calib_mvs
+
+A maximum-volumetric-speed calibration, no mesh needed: one hollow tube in 11 bands of 5 mm. The outer-wall speed rises per band so the flow goes 10, 12 ... 30 mm3/s (132.6 to 397.8 mm/s). Each flow is engraved on a front tab. Validated, not print-tested.
+
+Job (`examples/calib_mvs.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "calib_mvs.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#2060C0"
+
+# Max volumetric speed. One hollow tube in 11 bands of 5 mm. The outer-wall speed rises band by band so that the flow goes
+# 10, 12 ... 30 mm3/s. Each flow is engraved on a tab on the front. Look for the first band where the wall gets rough or thin.
+[calibration]
+type = "mvs"
+start = 10
+end = 30
+step = 2
+band_height = 5
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #2060C0  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: MVS tube x1, 80.5 x 36 x 55 mm; MVS tube (filament 1), Flow 10 (filament 1), Flow 12 (filament 1), Flow 14 (filament 1), Flow 16 (filament 1), Flow 18 (filament 1), Flow 20 (filament 1), Flow 22 (filament 1), Flow 24 (filament 1), Flow 26 (filament 1), Flow 28 (filament 1), Flow 30 (filament 1)
+    height 0-5 mm: layer 0.2 mm, outer_wall_speed 132.6
+    height 5-10 mm: layer 0.2 mm, outer_wall_speed 159.12
+    height 10-15 mm: layer 0.2 mm, outer_wall_speed 185.64
+    height 15-20 mm: layer 0.2 mm, outer_wall_speed 212.16
+    height 20-25 mm: layer 0.2 mm, outer_wall_speed 238.68
+    height 25-30 mm: layer 0.2 mm, outer_wall_speed 265.2
+    height 30-35 mm: layer 0.2 mm, outer_wall_speed 291.72
+    height 35-40 mm: layer 0.2 mm, outer_wall_speed 318.24
+    height 40-45 mm: layer 0.2 mm, outer_wall_speed 344.75
+    height 45-50 mm: layer 0.2 mm, outer_wall_speed 371.27
+    height 50-55 mm: layer 0.2 mm, outer_wall_speed 397.79
+```
+
 ## calib_tolerance
 
 A peg and hole fit test: five square holes and five pegs with clearances 0.1 to 0.3 mm, each labelled. The builder makes the objects; the clearance is the gap per side between flat faces. Validated, not print-tested.

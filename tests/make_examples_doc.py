@@ -33,10 +33,12 @@ ABOUT = {
     "seam_headroom": "Two colors with the embedded seam headroom set to 20 mm (the P1S presets use 10 mm). Needs Studio 2.9.2.",
     "calib_tolerance": "A peg and hole fit test: five square holes and five pegs with clearances 0.1 to 0.3 mm, each labelled. The builder makes the "
                        "objects; the clearance is the gap per side between flat faces. Validated, not print-tested.",
+    "calib_mvs": "A maximum-volumetric-speed calibration, no mesh needed: one hollow tube in 11 bands of 5 mm. The outer-wall speed rises per band so the flow goes 10, 12 ... 30 mm3/s "
+                 "(132.6 to 397.8 mm/s). Each flow is engraved on a front tab. Validated, not print-tested.",
 }
 ORDER = ["single_p1s", "single_p1p", "single_a1", "single_x1c", "colors_2", "colors_4", "colors_8", "modifier_negative",
          "inlay_no_penetration", "seam_headroom", "multi_plate", "pause", "per_object_settings", "height_ranges", "purge_matrix",
-         "effect_plate", "ledger_spool", "temperature_tower", "calibration_tower", "calib_flow", "calib_tolerance"]
+         "effect_plate", "ledger_spool", "temperature_tower", "calibration_tower", "calib_flow", "calib_mvs", "calib_tolerance"]
 
 
 def render():
