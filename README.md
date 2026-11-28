@@ -1,11 +1,42 @@
 # bambu-3mf-builder
 
-Build a ready-to-slice **Bambu Studio project file (.3mf)** from a short job file, and check any Bambu 3MF against rules
-taken from the published Bambu Studio source. It works as a Claude skill, and the scripts also run on their own.
+You describe a print in plain words. Claude builds a Bambu Studio project file (.3mf) that is ready to open, with the printer,
+the filaments, the AMS colors and the settings already set. You do not paint the model and you do not click through settings. You open
+the file in Studio, check it, slice it and print it. The skill does not send anything to your printer. It slices only to check the
+file (`--slice-check`). It can also check any Bambu 3MF against rules taken from the Bambu Studio source.
+
+## Examples
+
+Each row works today. The file in the last column builds that project (or tests it).
+
+| What you ask Claude | What you get | Example |
+|---|---|---|
+| "Print this keychain in four colors: base.stl black, ring.stl white, text.stl red, logo.stl blue." | One object with one part per color, each part on its own AMS slot. No painting. | `examples/colors_4.toml` |
+| "Make sign.stl white, with the text from text.stl as a red inlay." | A body part and an inlay part in two filaments, in one object. | `examples/inlay_no_penetration.toml` |
+| "Put a red cube and a blue cube on one plate." | Two objects on one plate, each in its own filament. Studio changes filament on every layer, so it purges (time and filament). | `examples/objects_two_colors.toml` |
+| "Print two copies of part.stl: one with 5 walls and 40% infill, one with 2 walls and 5%." | Settings per object, written so that Studio keeps them when it opens the file. | `examples/per_object_settings.toml` |
+| "Make a temperature tower for Bambu PLA Basic." | A ready-made tower with the temperature cut into each band, and the temperature change at each band. | `examples/calibration_tower.toml` |
+| "Make a flow calibration, a pressure advance tower, a max volumetric speed test and a tolerance test." (new in 1.3.0) | Calibration prints with each value engraved on the part: flow ratio per pad, `M900 K` per band, a speed per band, and peg and hole clearances. | `examples/calib_flow.toml`, `examples/calib_pa.toml`, `examples/calib_mvs.toml`, `examples/calib_tolerance.toml` |
+| "Pause at 10 mm so I can drop in magnets." | A pause at the layer for 10 mm. | `examples/pause.toml` |
+| "Use 0.12 mm layers for the bottom 2 mm and 0.08 mm with 4 walls for the top 3 mm." | Height ranges: fine layers where you ask, normal layers elsewhere. | `examples/height_ranges.toml` |
+| "Take my file bracket.3mf and change filament 2 to white PETG Basic." | Patch mode: it changes your own Studio file and keeps everything else as it was (the geometry byte for byte). | `tests/test_patch_core.py` |
+
+More prompts and what to give Claude: [docs/using-in-claude.md](docs/using-in-claude.md). All examples with pictures: [docs/examples.md](docs/examples.md).
+
+## Formats and slicers
+
+- 3MF is an open standard (3MF Consortium; ISO/IEC 25422:2025). The builder writes a Bambu Studio *project* 3MF: core 3MF geometry plus
+  Bambu's project settings.
+- Tested with Bambu Studio 2.8.2, 2.9.1 and 2.9.2 (table below).
+- OrcaSlicer 2.5.1 (command line, macOS): it refuses the file unless you add `--allow-newer-file`. With that flag, three examples sliced
+  with the same layers, colors, tool changes and settings as Studio. The OrcaSlicer app is not tested yet. PrusaSlicer is not tested.
+- `--orca-lint` lists the settings of a job that OrcaSlicer drops or renames, with the place in the Orca source.
+
+## What it does
 
 - Printer, process, filament presets and colors, per-object and per-part settings, modifiers and negative parts.
 - Height ranges (variable layer height): fine layers for a chamfer or a logo band, normal layers elsewhere, and other settings or a color per band.
-- Multi-color projects with Studio's purge volumes, several plates, pauses and temperature changes at a layer, temperature towers.
+- Multi-color projects with Studio's purge volumes, several plates, pauses and temperature changes at a layer, temperature towers, calibration prints.
 - Every setting is checked against the Studio option table (name, type, range, allowed values) before anything is written.
 - Python 3.8 or newer, standard library only. No network calls.
 
@@ -25,6 +56,7 @@ Studio opens a project from an older 2.x release with all its settings; only a f
 ## Use it in Claude
 
 Install it (below), then ask in plain words. Claude writes the job, builds, checks and hands you the 3MF and a short summary.
+Other things you can ask:
 
 - "Design a phone holder for a 20 mm tool rail in OpenSCAD and make it print-ready for my P1S in PETG Basic black."
 - "Make a Bambu Studio project for bracket.stl on my P1S in Bambu PETG Basic black, 4 walls, 20% infill."

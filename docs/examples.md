@@ -1344,3 +1344,60 @@ Plates
 
 warning: lint: object Cube, filament 1 (Bambu PETG HF @BBL P1S 0.4 nozzle, PETG): PETG fuses to a tight brim; set brim_object_gap = 0.25. The gap is 0.1 mm (brim_object_gap) with brim_type = outer_only.
 ```
+
+## objects_two_colors
+
+Two separate objects on one plate, each in its own filament (Studio 2.9.2). Studio changes filament on every layer, so it purges: about 3 h and 51 g for two 20 mm cubes.
+
+Job (`examples/objects_two_colors.toml`):
+
+```toml
+studio  = "2.9.2"
+output  = "objects_two_colors.3mf"
+printer = "Bambu Lab P1S 0.4 nozzle"
+process = "0.20mm Standard @BBL X1C"
+
+# Two separate objects on one plate, each in its own filament (AMS slot). Studio prints them together with a prime tower.
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#C12E1F"
+
+[[filament]]
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+color = "#0A2989"
+
+[[object]]
+name = "Red cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 1
+
+[[object]]
+name = "Blue cube"
+[[object.part]]
+mesh = "data/cube20.stl"
+filament = 2
+```
+
+Builder summary:
+
+```
+  Bambu Studio 2.9.2.62 | Bambu Lab P1S 0.4 nozzle | 0.20mm Standard @BBL X1C
+  Plate type: Cool Plate
+  Walls 2, infill 15% rectilinear, layer 0.2 mm
+
+Filaments
+  1  #C12E1F  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+  2  #0A2989  Bambu PLA Basic @BBL P1S 0.4 nozzle  nozzle 220 C  flow 0.98
+
+Plates
+  plate 1: Red cube x1, 20 x 20 x 20 mm; Part 1 (filament 1)
+  plate 1: Blue cube x1, 20 x 20 x 20 mm; Part 1 (filament 2)
+
+Purge per color change, grams (from filament in the row to filament in the column; approximate)
+             1       2
+    1        -    0.27
+    2     0.50       -
+  Wipe tower: x 165, y 220.697 (plate 1)
+  Largest single purge 0.50 g. Mode: auto
+```

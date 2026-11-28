@@ -1,12 +1,12 @@
 ---
 name: bambu-3mf-builder
-description: Build a Bambu Studio project 3MF from STL, OBJ or 3MF models (printer, filament presets and colors, settings per project, object or part, several plates, modifier and negative parts, pauses and temperature changes at a layer, height ranges, temperature towers), change an existing Bambu Studio 3MF (printer, presets, colors, settings, plate type, filament slots, pauses), and check or validate any Bambu 3MF against rules taken from the Studio source. Use when someone wants a ready-to-slice Bambu Studio project (also right after designing a part, for example in OpenSCAD), a temperature tower, a multi-color or AMS project, a pause for a manual filament swap, the exact Bambu preset names for a printer, to change or check a 3MF from MakerWorld or elsewhere, to move a project to another Bambu printer, or to remove personal data from a 3MF before sharing. Not for slicing to G-code, sending to a printer, rotating, scaling or repairing a model, STEP files, general print advice, or Orca, Prusa or Cura projects.
+description: Turn a print described in plain words into a ready-to-open Bambu Studio project 3MF, with printer, filaments, AMS colors and settings already set (no painting, no clicking through settings). Multi-color from STL, OBJ or 3MF parts (one part per color, inlays), several objects or plates, settings per object or part, pauses, height ranges, temperature towers and calibration prints (flow, pressure advance, max volumetric speed, tolerance), setting recipes and a calibration ledger. Also changes an existing Bambu Studio 3MF (presets, colors, settings, plate, slots) and checks any Bambu 3MF against rules from the Studio source. Use for a ready-to-slice Bambu project (also after designing a part in OpenSCAD), an AMS project, a calibration print, exact Bambu preset names, moving a project to another Bambu printer, or removing personal data from a 3MF. Not for G-code, sending to a printer, repairing or scaling models, STEP files, general print advice, or Orca, Prusa or Cura projects.
 ---
 
 # Bambu 3MF builder
 
 Builds a Bambu Studio project file (.3mf) from a TOML job file, and validates 3MF files. The rules come from the published
-Bambu Studio source (tags v02.08.02.61 and v02.09.01.70), not from guessing. Python 3.8 or newer, standard library only.
+Bambu Studio source (tags v02.08.02.61, v02.09.01.70 and v02.09.02.62), not from guessing. Python 3.8 or newer, standard library only.
 
 The output opens in Studio with every setting as written. It is CI-verified (sliced in real headless Studio), not print-tested
 on every printer. Say that to the user if they ask whether a print will work.
