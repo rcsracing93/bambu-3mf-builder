@@ -12,7 +12,7 @@ ROOT = os.path.normpath(os.path.join(HERE, ".."))
 ENV = dict(os.environ, SOURCE_DATE_EPOCH="1700000000")
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
-from compare_release import job_copy, needs  # noqa: E402
+from compare_release import job_copy, needs, list_examples  # noqa: E402
 from bambu3mf.profiles import STUDIO_VERSIONS as VERS_FULL  # noqa: E402
 import make_release  # noqa: E402
 import pool  # noqa: E402
@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory() as tmp:
     zipfile.ZipFile(os.path.join(rel, "bambu-3mf-builder-skill.zip")).extractall(un)
     R = os.path.join(un, "bambu-3mf-builder")
     check("SKILL.md at top", os.path.isfile(os.path.join(R, "SKILL.md")))
-    examples = sorted(f for f in os.listdir(os.path.join(ROOT, "examples")) if f.endswith(".toml") and not f.startswith("_"))
+    examples = list_examples()
     check("examples found", len(examples) >= 10)
 
     # every example for every supported version: the release stores a preset file once (profiles/BASE), so each version

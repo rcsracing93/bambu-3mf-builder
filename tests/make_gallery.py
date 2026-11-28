@@ -8,6 +8,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from bambu3mf import job as jobmod  # noqa: E402
+sys.path.insert(0, HERE)
+from harness import list_examples  # noqa: E402
 
 MAX_SEGMENTS = 3000
 TOKEN = re.compile(r"([XYZEF])(-?\d*\.?\d+)")
@@ -107,7 +109,7 @@ def main(argv):
     out = argv[argv.index("--out") + 1] if "--out" in argv else os.path.join(ROOT, "docs", "gallery")
     os.makedirs(out, exist_ok=True)
     n = 0
-    for jf in sorted(glob.glob(os.path.join(ROOT, "examples", "*.toml"))):
+    for jf in list_examples(paths=True):
         name = os.path.splitext(os.path.basename(jf))[0]
         job = jobmod.load_job(jf)
         colors = [f["color"] for f in job.filaments]

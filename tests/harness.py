@@ -5,6 +5,14 @@ so a builder bug cannot make a wrong file look right. Each function returns (ok,
 import json, math, os, re, zipfile
 import xml.etree.ElementTree as ET
 
+
+def list_examples(tree=None, paths=False):
+    """The example jobs of a tree (default: this repo), sorted: file names (name.toml), or full paths with paths=True. Every test
+    and tool lists the examples with this. Names that start with "_" are never examples."""
+    d = os.path.join(tree or os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")), "examples")
+    names = sorted(f for f in os.listdir(d) if f.endswith(".toml") and not f.startswith("_"))
+    return [os.path.join(d, f) for f in names] if paths else names
+
 # ---- the Studio log ----------------------------------------------------------------------------------------------
 # Warnings Studio 2.8.2 and 2.9.1 print for every healthy slice at --debug 2. Each one was read in the source and is harmless.
 BENIGN_LOG = [

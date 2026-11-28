@@ -6,7 +6,7 @@ Usage: python3 tests/compare_release.py REF_TREE [--versions 2.8.2,2.9.1] [--rep
   git worktree add ../ref-1.2.0 v1.2.0 && python3 tests/compare_release.py ../ref-1.2.0
 -j N builds N examples at a time (default: the CPU count). The report lines keep the version and example order.
 Exit 0 when every pair is identical and at least one pair was compared."""
-import hashlib, os, re, subprocess, sys, tempfile
+import atexit, hashlib, os, re, shutil, subprocess, sys, tempfile
 
 H = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, H)
@@ -31,17 +31,35 @@ def needs(path, version):
     return p is None or _vt(version) >= _vt(p)
 
 
+from harness import list_examples  # noqa: E402,F401  (other scripts import it from here too)
+
+_COPIES = []
+
+
+def _copies_dir():
+    if not _COPIES:
+        _COPIES.append(tempfile.mkdtemp(prefix="job_copies_"))
+        atexit.register(shutil.rmtree, _COPIES[0], True)
+    return _COPIES[0]
+
+
 def job_copy(tree, example, studio):
-    """A copy of the example job next to it (mesh paths stay relative), with studio set (None = the line removed: auto)."""
-    src = os.path.join(tree, "examples", example)
-    text = open(src, encoding="utf-8").read()
+    """A copy of an example job in a new temp folder (never in examples/), with studio set (None = the line removed: auto).
+    Relative mesh paths are made absolute (to the tree's examples/ folder); the copy keeps the example's file name, because the
+    summary names the job file. The 3MF holds mesh file names only, so the build is the same as from examples/."""
+    src_dir = os.path.join(os.path.abspath(tree), "examples")
+    text = open(os.path.join(src_dir, example), encoding="utf-8").read()
     text = re.sub(r'(?m)^studio\s*=.*\n', "", text)
     if studio:
         text = 'studio = "%s"\n' % studio + text
-    tag = (studio or "auto").replace(".", "_")
-    # the process id keeps copies of parallel test processes apart; every examples/ listing skips names that start with "_"
-    dst = os.path.join(tree, "examples", "_cmp_%d_%s_%s" % (os.getpid(), tag, example))
-    open(dst, "w", encoding="utf-8").write(text)
+
+    def absmesh(m):
+        p = m.group(2)
+        return m.group(1) + '"%s"' % (p if os.path.isabs(p) else os.path.normpath(os.path.join(src_dir, p)).replace("\\", "/"))
+    text = re.sub(r'(?m)^(\s*mesh\s*=\s*)"([^"]*)"', absmesh, text)
+    dst = os.path.join(tempfile.mkdtemp(dir=_copies_dir()), example)
+    with open(dst, "w", encoding="utf-8") as fh:
+        fh.write(text)
     return dst
 
 
@@ -67,7 +85,7 @@ def main(argv):
         versions = argv[argv.index("--versions") + 1].split(",")
     if "--report" in argv:
         report = argv[argv.index("--report") + 1]
-    examples = sorted(f for f in os.listdir(os.path.join(NEW, "examples")) if f.endswith(".toml") and not f.startswith("_"))
+    examples = list_examples()
     tmp = tempfile.mkdtemp()
     n = pool.jobs(argv)
 

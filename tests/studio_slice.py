@@ -293,7 +293,7 @@ def main():
     ap.add_argument("--report")
     ap.add_argument("--work")
     a = ap.parse_args()
-    jobs = a.jobs or sorted(p for p in glob.glob(os.path.join(ROOT, "examples", "*.toml")) if not os.path.basename(p).startswith("_"))
+    jobs = a.jobs or H.list_examples(paths=True)
     work = os.path.abspath(a.work) if a.work else tempfile.mkdtemp(prefix="studio_slice_")
     os.makedirs(work, exist_ok=True)
     rep = Report()

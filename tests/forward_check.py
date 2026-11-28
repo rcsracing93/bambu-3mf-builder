@@ -221,7 +221,7 @@ def main(argv):
         lines += ["0 examples checked", "NOT CHECKED"]
         print("\n".join(lines))
         return 1
-    examples = sorted(f for f in os.listdir(os.path.join(ROOT, "examples")) if f.endswith(".toml") and not f.startswith("_"))
+    examples = harness.list_examples()
     examples = [ex for ex in examples if not only or ex[:-5] in only]
     skipped = [ex for ex in examples if not needs(os.path.join(ROOT, "examples", ex), choice.version)]
     examples = [ex for ex in examples if ex not in skipped]           # an example for a newer Studio than the build target

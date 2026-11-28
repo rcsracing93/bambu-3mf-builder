@@ -6,6 +6,8 @@ import glob, os, re, shutil, subprocess, sys, tempfile
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(H)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
+sys.path.insert(0, H)
+from harness import list_examples  # noqa: E402
 os.environ["SOURCE_DATE_EPOCH"] = "1700000000"
 from bambu3mf.job import load_job
 from bambu3mf import package, summary, studio_detect, privacy
@@ -19,7 +21,7 @@ ABS = re.compile(r"(^|[\s`(\"'=])(/[A-Za-z0-9_.~-]+){2,}|[A-Za-z]:\\")
 CLI = os.path.join(ROOT, "scripts", "build_bambu_3mf.py")
 tmp = tempfile.mkdtemp()
 try:
-    for ex in sorted(glob.glob(os.path.join(ROOT, "examples", "*.toml"))):
+    for ex in list_examples(paths=True):
         name = os.path.splitext(os.path.basename(ex))[0]
         d = os.path.join(tmp, name); os.makedirs(d)
         out = os.path.join(d, name + ".3mf")

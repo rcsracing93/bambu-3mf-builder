@@ -6,6 +6,8 @@ import glob, io, json, os, shutil, sys, tempfile, zipfile
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(H)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
+sys.path.insert(0, H)
+from harness import list_examples  # noqa: E402
 os.environ["SOURCE_DATE_EPOCH"] = "1700000000"
 from bambu3mf import package, summary, validate
 from bambu3mf.job import load_job, JobError
@@ -127,7 +129,7 @@ try:
     check("validator: bed temperature 0 on another plate type is not R39", "R39" not in [f.rule for f in r.findings], [str(f) for f in r.findings])
 
     # no lint warning on any example
-    for ex in sorted(glob.glob(os.path.join(ROOT, "examples", "*.toml"))):
+    for ex in list_examples(paths=True):
         d = os.path.join(tmp, "ex_" + os.path.basename(ex)[:-5]); os.makedirs(d)
         s = package.build(load_job(ex), os.path.join(d, "o.3mf"))
         check("example %s: no lint warning" % os.path.basename(ex), not [x for x in s.warnings if x.startswith("lint:")], s.warnings)
