@@ -129,9 +129,12 @@ try:
     check("a recipe that is not a name or a list is refused", err and "recipe" in err, err)
     err = refusal(job_text("2.9.2", 'recipe = ["strong", "fast-draft"]\n'))
     check("two recipes that set one key to two values are refused", err and "different values" in err and "sparse_infill_density" in err, err)
-    s = build(job_text("2.9.2", 'recipe = ["visible-face", "strong"]\n'), "two")
+    err = refusal(job_text("2.9.2", 'recipe = ["visible-face", "strong"]\n'))
+    check("visible-face (3 walls) with strong (4 walls) is refused and says to set wall_loops", err and "wall_loops" in err and "[settings]" in err, err)
+    s = build(job_text("2.9.2", 'recipe = ["visible-face", "strong"]\n[settings]\nwall_loops = 4\n'), "two")
     c = cfg_of(s)
-    check("a list of two recipes applies both", c["wall_loops"] == "4" and c["wall_generator"] == "arachne", (c["wall_loops"], c["wall_generator"]))
+    check("a list of two recipes applies both; the job's wall_loops settles the clash", c["wall_loops"] == "4" and c["wall_generator"] == "arachne"
+          and c["sparse_infill_pattern"] == "gyroid", (c["wall_loops"], c["wall_generator"], c.get("sparse_infill_pattern")))
     # fake tables: the refusal for a missing key and for a value the version rejects, shown with made-up recipes
     # (every real key exists in 2.9.1 and 2.9.2, and the real refusal on 2.8.2 is tested above)
     saved = dict(recipes.RECIPES)
@@ -154,7 +157,7 @@ try:
     s = package.build(load_job(ex), os.path.join(tmp, "ex.3mf"))
     raw = tomllib.load(open(ex, "rb"))
     names, want = recipe_check.expected(raw)
-    check("check module expects 8 keys, with the job's wall_sequence", len(want) == 8 and want["wall_sequence"] == "outer wall/inner wall", want)
+    check("check module expects 9 keys, with the job's wall_sequence", len(want) == 9 and want["wall_sequence"] == "outer wall/inner wall", want)
     res = recipe_check.checks(raw, s.path, [])
     check("check module: 3MF half passes on the example", res and res[0][1], res)
     check("check module: no G-code is a failure, not a pass", len(res) == 2 and not res[1][1] and "NOT CHECKED" in res[1][2], res)

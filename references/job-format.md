@@ -407,7 +407,8 @@ Best look on faces people see. Needs Studio 2.9.1 or newer (`sub_top_surface_pat
 | Key | Value | Why |
 |---|---|---|
 | `wall_generator` | `"arachne"` | Variable-width walls fill thin features without gaps. The Bambu presets use `classic`. |
-| `wall_sequence` | `"inner-outer-inner wall"` | The outer wall is printed between two inner walls, so it has a printed wall on both sides. This is a common choice for a clean outer face. Studio (PerimeterGenerator.cpp) needs at least 3 walls for this order. With 2 walls, as in the 0.20 mm Standard preset, the order stays inner then outer. Set `wall_loops = 3` in `[settings]` to use it. |
+| `wall_loops` | `3` | The wall order below needs at least 3 walls (PerimeterGenerator.cpp). |
+| `wall_sequence` | `"inner-outer-inner wall"` | The outer wall is printed between two inner walls, so it has a printed wall on both sides. This is a common choice for a clean outer face. Studio (PerimeterGenerator.cpp) needs at least 3 walls for this order, so the recipe also sets `wall_loops = 3`. |
 | `override_filament_scarf_seam_setting` | `true` | Studio reads the process scarf seam keys only when this is on (GCode.cpp). Otherwise it uses the filament preset. |
 | `seam_slope_type` | `"external"` | A scarf seam on the outer contour (Studio calls it "Contour"). It hides the seam. |
 | `top_surface_pattern` | `"monotonic"` | Every line of a top region runs in one direction, so the light falls evenly. The presets use `monotonicline`. |

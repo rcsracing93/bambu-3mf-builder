@@ -33,7 +33,7 @@ ABOUT = {
     "calib_pa": "A pressure advance tower, no mesh needed: a hollow square tower of seven 5 mm bands, K 0 to 0.06 in 0.01 steps. Each band starts with a "
                 "custom `M900 K<value>` line; the K value is cut into a stair step beside the tower. Studio 2.9.2, validated, not print-tested.",
     "seam_headroom": "Two colors with the embedded seam headroom set to 20 mm (the P1S presets use 10 mm). Needs Studio 2.9.2.",
-    "recipe_visible_face": "The `visible-face` recipe (Studio 2.9.2): eight process settings for the best look on visible faces, with one of them (wall order) overridden by the job. "
+    "recipe_visible_face": "The `visible-face` recipe (Studio 2.9.2): nine process settings for the best look on visible faces, with one of them (wall order) overridden by the job. "
                            "See references/job-format.md, \"Recipes\". Validated, not print-tested.",
     "calib_tolerance": "A peg and hole fit test: five square holes and five pegs with clearances 0.1 to 0.3 mm, each labelled. The builder makes the "
                        "objects; the clearance is the gap per side between flat faces. Validated, not print-tested.",

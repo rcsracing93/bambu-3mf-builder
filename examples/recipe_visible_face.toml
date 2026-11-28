@@ -3,7 +3,7 @@ output  = "recipe_visible_face.3mf"
 printer = "Bambu Lab P1S 0.4 nozzle"
 process = "0.20mm Standard @BBL X1C"
 
-# One recipe sets eight process settings for the best look on visible faces (see references/job-format.md, "Recipes").
+# One recipe sets nine process settings for the best look on visible faces (see references/job-format.md, "Recipes").
 recipe = "visible-face"
 
 # A key in [settings] wins over the recipe: this job keeps Arachne but asks for the "outer wall/inner wall" order.

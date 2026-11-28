@@ -14,6 +14,7 @@ RECIPES = {
         "purpose": "The best look on visible faces: hidden seam, smooth top surfaces.",
         "settings": {
             "wall_generator": "arachne",                         # variable-width walls, no gaps in thin features
+            "wall_loops": 3,                                     # PerimeterGenerator.cpp: inner-outer-inner needs 3 walls or more
             "wall_sequence": "inner-outer-inner wall",           # the outer wall is pressed against a printed inner wall on both sides
             "override_filament_scarf_seam_setting": True,        # GCode.cpp reads seam_slope_type only when this is on
             "seam_slope_type": "external",                       # scarf seam on the outer contour ("Contour" in Studio)
@@ -83,7 +84,7 @@ def apply(raw_value, user_settings, by, ver, chk, settings_table, table=None):
             continue
         wanted.append(name)
         for key, val in table[name]["settings"].items():
-            if key in merged and str(merged[key]) != str(val):
+            if key in merged and str(merged[key]) != str(val) and key not in user_settings:   # the job's own value settles a clash
                 chk.err("recipe", "recipes %s and %s set %s to different values (%r and %r). Use one of them, or set %s in [settings]." % (
                     owner[key], name, key, merged[key], val, key))
                 continue
