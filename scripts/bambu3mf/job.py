@@ -16,6 +16,7 @@ from .serialize import normalize
 from . import studio_detect
 from . import calibration
 from . import calibjobs
+from . import ledger as _ledger
 from . import versions
 
 try:
@@ -26,9 +27,9 @@ except ImportError:                      # Python 3.8-3.10: vendored tomli 2.0.1
 STUDIO_ALIASES = {"2.8.2": "2.8.2.61", "2.8.2.61": "2.8.2.61", "2.9.1": "2.9.1.70", "2.9.1.70": "2.9.1.70",
                   "2.9.2": "2.9.2.62", "2.9.2.62": "2.9.2.62"}
 TOP_KEYS = {"studio", "output", "title", "printer", "process", "plate_type", "settings", "filament", "object",
-            "layer_gcode", "temperature_tower", "purge", "allow_large", "strict_version", "calibration"}
+            "layer_gcode", "temperature_tower", "purge", "allow_large", "strict_version", "calibration", "ledger"}
 BAD_NAME_CHARS = '<>:/\\?*"|'          # Studio drops such names (validator rule R31)
-FILAMENT_KEYS = {"preset", "color", "settings"}
+FILAMENT_KEYS = {"preset", "color", "settings", "spool"}
 OBJECT_KEYS = {"name", "plate", "position", "settings", "part", "copies", "height_range"}
 RANGE_KEYS = {"min_z", "max_z", "layer_height", "filament", "settings"}
 PART_KEYS = {"name", "mesh", "filament", "type", "settings", "units"}
@@ -516,14 +517,16 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
         fl = []
     if len(fl) > 16:
         chk.err("filament", "%d filaments. Studio supports up to 16." % len(fl))
+    led = _ledger.open_for_job(raw, base, fl, chk)           # None when no [[filament]] uses spool = "name"
     for i, f in enumerate(fl, 1):
         w = "[[filament]] #%d" % i
         if not isinstance(f, dict):
             chk.err(w, "must be a table"); continue
+        spool = _ledger.pick(led, f, w, chk)
         for k in f:
             if k not in FILAMENT_KEYS:
                 chk.err("%s.%s" % (w, k), "unknown key.%s" % ((" Closest: " + ", ".join(_closest(k, FILAMENT_KEYS))) if _closest(k, FILAMENT_KEYS) else ""))
-        preset = f.get("preset")
+        preset = f.get("preset") or (spool["preset"] if spool else None)
         entry = {"preset": preset, "color": None, "settings": {}}
         if not preset:
             chk.err(w, "preset is required")
@@ -553,6 +556,7 @@ def load_job(path, root=None, user_presets=None, strict_version=False):
                 chk.err(w + ".color", "%r is not a color. Use \"#RRGGBB\", e.g. \"#C0C0C0\"" % c)
         entry["settings"] = _settings_table(f.get("settings", {}), ("filament",), by, ver, w + ".settings", chk,
                                             "[filament.settings] (filament settings only)", job.plate_type)
+        _ledger.apply(led, spool, entry, by, ver, job.plate_type, w, chk)
         job.filaments.append(entry)
 
     if job.purge_table is not None:

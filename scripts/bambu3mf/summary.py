@@ -32,6 +32,10 @@ def format_summary(job, s):
         vf = s.result.vf
         start = sum(vf[:i])
         L.append("  %d  %s  %s  nozzle %s C  flow %s" % (i + 1, f["color"], f["preset"], nt[start], cfg["filament_flow_ratio"][start]))
+        sp = f.get("spool")
+        if sp:
+            L.append("     spool %s (ledger %s%s): %s" % (sp["name"], sp["ledger"], (", measured " + sp["date"]) if sp.get("date") else "",
+                                                           ", ".join("%s %s" % (a["key"], a["value"]) for a in sp["applied"]) or "no values"))
     L.append("")
     L.append("Plates")
     for k in range(1, s.plates + 1):
@@ -111,8 +115,12 @@ def format_summary_md(job, s, slice_info=None):
         pre = cfg["filament_settings_id"][i] if cfg.get("filament_settings_id") else f["preset"]
         col = cfg["filament_colour"][i] if cfg.get("filament_colour") else f["color"]
         L.append("%d. %s, color %s, nozzle %s C, bed %s" % (i + 1, pre, col, nz, ("%s C" % bed) if bed is not None else "n/a"))
+        from .ledger import summary_lines
+        L += summary_lines(f)
+        from_ledger = {a["key"] for a in (f.get("spool") or {}).get("applied", [])}
         for k in sorted(f["settings"]):
-            L.append("    - override `%s` = `%s`" % (k, _val(f["settings"][k])))
+            if k not in from_ledger:
+                L.append("    - override `%s` = `%s`" % (k, _val(f["settings"][k])))
     L += ["", "## Objects and parts", ""]
     for ob in s.objects:
         src = ob.src

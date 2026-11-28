@@ -1,0 +1,33 @@
+# EXAMPLE calibration ledger. The spools and the values are made up. Replace them with your own measurements.
+# Format: references/job-format.md, section "Calibration ledger".
+# This file is in examples/ledger/ so that it is not taken for an example job.
+
+[[spool]]
+name = "Example PLA red 1"
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+flow = 0.96
+pa = 0.04
+max_volumetric_speed = 17.5
+nozzle_temp = 212
+nozzle_temp_first_layer = 217
+bed_temp = 57
+bed_temp_first_layer = 62
+date = "2026-01-15"
+source = "made-up example: flow cube and PA line print"
+
+[[spool]]
+name = "Example PLA white 2"
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"
+flow = 0.985
+nozzle_temp = 208
+date = "2026-02-03"
+source = "made-up example: temperature tower"
+
+[[spool]]
+name = "Example PETG gray 1"
+preset = "Bambu PETG HF @BBL P1S 0.4 nozzle"
+flow = 0.94
+pa = 0.06
+max_volumetric_speed = 11
+date = "2026-02-20"
+source = "made-up example: flow cube"

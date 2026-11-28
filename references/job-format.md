@@ -17,6 +17,7 @@ problem with its key name, and builds nothing until the file is clean.
 | `allow_large` | no | `true` lets a build go on above 10 million triangles in total (default `false`). Use it only after the user agreed. |
 | `purge` | no | `"auto"` (default: Studio's color-based purge volumes) or `"default"` (140 + 140 mm3 for every pair), or a table of hand-set volumes, e.g. `{ "1>2" = 450, "2>1" = 300 }` (see "Manual purge matrix" below). |
 | `settings` | no | Table of Studio process settings, applied to the whole project. |
+| `ledger` | no | Path of a calibration ledger, used by `[[filament]]` tables that have `spool` (see "Calibration ledger"). |
 
 List real preset names with `python3 scripts/build_bambu_3mf.py --list printer|process|filament [--printer NAME] [--studio V] [--match text]`.
 Base templates (names starting with `fdm_`) are not selectable presets and are refused.
@@ -35,11 +36,54 @@ Base templates (names starting with `fdm_`) are not selectable presets and are r
 
 | Key | Required | Meaning |
 |---|---|---|
-| `preset` | yes | Filament preset made for the printer. |
+| `preset` | yes (no, with `spool`) | Filament preset made for the printer. With `spool`, it may be left out: the spool's preset is used. |
 | `color` | yes | `"#RRGGBB"`. |
 | `settings` | no | Table of Studio filament settings for this slot, e.g. `nozzle_temperature = "225"`. |
+| `spool` | no | Name of a spool in the calibration ledger. Its measured values become settings of this slot (see "Calibration ledger"). |
 
 Slots are numbered 1, 2, 3 in file order. A slot no part uses stays in the project and its purge volume is still counted (warning).
+
+### Calibration ledger
+
+A ledger is a TOML file that holds the values you measured for each spool. A job names a spool, and the builder applies those values.
+Ledger values are filament settings. The builder writes them and lists them in `different_settings_to_system`, the same as `[filament.settings]`.
+
+```toml
+[[spool]]
+name = "PLA Basic red, spool 1"          # required, unique in the file
+preset = "Bambu PLA Basic @BBL P1S 0.4 nozzle"   # required: the preset the values were measured with
+flow = 0.97                              # filament_flow_ratio
+pa = 0.032                               # pressure_advance (K)
+max_volumetric_speed = 18.5              # filament_max_volumetric_speed, mm3/s
+nozzle_temp = 215                        # nozzle_temperature, C
+nozzle_temp_first_layer = 220            # nozzle_temperature_initial_layer, C
+bed_temp = 58                            # bed temperature of the job's plate_type, C
+bed_temp_first_layer = 60                # the first-layer form
+date = "2026-01-15"                      # YYYY-MM-DD
+source = "flow calibration print, 2026-01-15"   # free text: the print that proved it
+```
+
+Every key except `name` and `preset` is optional. The builder applies only the keys you give. Example: `examples/ledger/calibration.toml`.
+
+Where the builder looks for the ledger, in this order. It reads the ledger only when a `[[filament]]` has `spool`.
+
+1. The top-level job key `ledger = "path"`. A relative path starts at the job file's folder. If the file is missing, that is an error (the builder does not go on to the next rule).
+2. A file named `calibration.toml` in the same folder as the job file.
+3. The environment variable `BAMBU_CALIBRATION_LEDGER` (a file path).
+
+There is no default path in your home folder. If none of the three finds a file, the builder names all three and stops.
+
+Rules for `spool = "name"`:
+
+- The spool's `preset` must equal the slot's `preset`. If the slot has no `preset`, the builder uses the spool's.
+- A value in `[filament.settings]` wins over the ledger value for the same Studio key. The builder prints a warning when both are set.
+- `pa` sets `pressure_advance` and also sets `enable_pressure_advance` to true (it is a true/false setting). If the job sets `enable_pressure_advance` itself, the job value wins.
+- `bed_temp` and `bed_temp_first_layer` set the bed temperature key of the job's `plate_type` (for example `textured_plate_temp`). If the job has no `plate_type` and the spool has a bed temperature, the builder refuses and says so. It does not guess a plate.
+- Each value must be in the range Studio allows for that setting in the job's Studio version. Otherwise the builder names the spool and the key.
+- Errors: an unknown spool (the message names the ledger file and the closest spool names), a missing ledger file, a duplicate spool name, a wrong key, a value that is not a number, a bad date.
+- The summary file names the spool, the ledger file name (no folder), the date, the source and each value applied.
+
+Example job: `examples/ledger_spool.toml`.
 
 ### Manual purge matrix
 
